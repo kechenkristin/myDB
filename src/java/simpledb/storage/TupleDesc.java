@@ -158,9 +158,42 @@ public class TupleDesc implements Serializable {
      * @return the new TupleDesc
      */
     public static TupleDesc merge(TupleDesc td1, TupleDesc td2) {
-        // some code goes here
-        return null;
+        if (td1 == null) {
+            return td2;
+        }
+
+        if (td2 == null) {
+            return td1;
+        }
+
+        // create arraylist to hold items
+        ArrayList<Type> typeList = new ArrayList<>();
+        ArrayList<String> nameList = new ArrayList<>();
+
+        int length = td1.numFields() + td2.numFields();
+
+        Type[] typeArr = new Type[length];
+        String[] nameArr = new String[length];
+
+        for (int i = 0; i < td1.numFields(); i++) {
+            typeArr[i] = td1.getFieldType(i);
+            nameArr[i] = td1.getFieldName(i);
+        }
+
+        int td1Length = td1.numFields();
+
+        for (int i = 0; i < td2.numFields(); i++) {
+            typeArr[td1Length + i] = td2.getFieldType(i);
+            nameArr[td1Length + i] = td2.getFieldName(i);
+        }
+
+
+        // create the new tupleDes
+        TupleDesc ret = new TupleDesc(typeArr, nameArr);
+
+        return ret;
     }
+
 
     /**
      * Compares the specified object with this TupleDesc for equality. Two
@@ -173,7 +206,6 @@ public class TupleDesc implements Serializable {
      */
 
     public boolean equals(Object o) {
-        // some code goes here
         if (o == this) {
             return true;
         }
@@ -182,7 +214,17 @@ public class TupleDesc implements Serializable {
             return false;
         }
 
-        // todo
+        TupleDesc other = (TupleDesc) o;
+
+        if (other.numFields() != this.numFields() || other.getSize() != this.getSize()) {
+            return false;
+        }
+
+        for (int i = 0; i < items.size(); i++) {
+            if (this.getFieldType(i) != other.getFieldType(i)) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -200,7 +242,17 @@ public class TupleDesc implements Serializable {
      * @return String describing this descriptor.
      */
     public String toString() {
-        // some code goes here
-        return "";
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (int i = 0; i < this.numFields(); i++) {
+            TDItem tdItem = items.get(i);
+            stringBuilder.append("(")
+                    .append(tdItem.fieldType.toString())
+                    .append("[").append(i).append("]")
+                    .append("(").append(tdItem.fieldName)
+                    .append("[").append(i).append("])");
+        }
+
+        return stringBuilder.toString();
     }
 }

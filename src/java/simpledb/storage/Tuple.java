@@ -1,5 +1,7 @@
 package simpledb.storage;
 
+import simpledb.common.Type;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +33,21 @@ public class Tuple implements Serializable {
     public Tuple(TupleDesc td) {
         schema = td;
         fields = new ArrayList<>();
+        initField(td);
+    }
+
+    /**
+     * help to init a tuple's field
+     */
+    private void initField(TupleDesc td) {
+        for (int i = 0; i < td.numFields(); i++) {
+            Type fieldType = td.getFieldType(i);
+           if (fieldType.equals(Type.INT_TYPE)) {
+               fields.add(new IntField(0));
+           } else if (fieldType.equals(Type.STRING_TYPE)) {
+                fields.add(new StringField("", fieldType.getLen()));
+           }
+        }
     }
 
     /**
@@ -88,9 +105,20 @@ public class Tuple implements Serializable {
      *
      * where \t is any whitespace (except a newline)
      */
+    @Override
     public String toString() {
-        // some code goes here
-        throw new UnsupportedOperationException("Implement this");
+        StringBuilder stringBuilder = new StringBuilder();
+        Iterator<TupleDesc.TDItem> tdItems = schema.iterator();
+        int i = 0;
+        while (tdItems.hasNext()) {
+            TupleDesc.TDItem item = tdItems.next();
+            stringBuilder.append("FiledName: ").append(item.fieldName);
+            stringBuilder.append("==> Value: ").append(fields.get(i).toString());
+            stringBuilder.append("\n");
+
+            i++;
+        }
+        return stringBuilder.toString();
     }
 
     /**
@@ -109,5 +137,30 @@ public class Tuple implements Serializable {
     {
         schema = td;
         fields = new ArrayList<>();
+        initField(td);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (!(o instanceof Tuple)) {
+            return false;
+        }
+
+        Tuple other = (Tuple) o;
+
+        if (this.schema.equals(other.schema) || this.recordId.equals(other.recordId)) {
+            return false;
+        }
+
+        for (int i = 0; i < this.fields.size(); i++) {
+            if (!other.getField(i).equals(this.getField(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 }
