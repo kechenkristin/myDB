@@ -166,10 +166,6 @@ public class TupleDesc implements Serializable {
             return td1;
         }
 
-        // create arraylist to hold items
-        ArrayList<Type> typeList = new ArrayList<>();
-        ArrayList<String> nameList = new ArrayList<>();
-
         int length = td1.numFields() + td2.numFields();
 
         Type[] typeArr = new Type[length];

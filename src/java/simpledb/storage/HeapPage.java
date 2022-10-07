@@ -28,6 +28,8 @@ public class HeapPage implements Page {
     byte[] oldData;
     private final Byte oldDataLock= (byte) 0;
 
+    final int BYTE_SIZE = 8;
+
     /**
      * Create a HeapPage from a set of bytes of data read from disk.
      * The format of a HeapPage is a set of header bytes indicating
@@ -72,7 +74,7 @@ public class HeapPage implements Page {
         @return the number of tuples on this page
     */
     private int getNumTuples() {
-        return Math.floorDiv ((BufferPool.getPageSize() * 8), (td.getSize() * 8 + 1));
+        return Math.floorDiv ((BufferPool.getPageSize() * BYTE_SIZE), (td.getSize() * BYTE_SIZE + 1));
     }
 
     /**
@@ -80,7 +82,7 @@ public class HeapPage implements Page {
      * @return the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
      */
     private int getHeaderSize() {        
-        return (int) Math.ceil(getNumTuples() / 8);
+        return (int) Math.ceil(getNumTuples() / BYTE_SIZE);
     }
     
     /** Return a view of this page before it was modified
@@ -281,24 +283,38 @@ public class HeapPage implements Page {
      * Returns the number of empty slots on this page.
      */
     public int getNumEmptySlots() {
-        // todo
-        return 0;
+        int numEmpty = 0;
+        for (byte b : header) {
+            for (int j = 0; j < BYTE_SIZE; j++) {
+                if ((b & ( 1 << j)) == 0) {
+                    numEmpty++;
+                }
+            }
+        }
+        return numEmpty;
     }
 
     /**
      * Returns true if associated slot on this page is filled.
      */
     public boolean isSlotUsed(int i) {
-        // some code goes here
-        return false;
+        int index = i / BYTE_SIZE;
+        int offset = i % BYTE_SIZE;
+        return (header[index] & (1 << offset)) != 0;
     }
 
     /**
      * Abstraction to fill or clear a slot on this page.
      */
     private void markSlotUsed(int i, boolean value) {
-        // some code goes here
-        // not necessary for lab1
+        int index = i / BYTE_SIZE;
+        int offerset = i % BYTE_SIZE;
+
+        if (value) {
+            header[index] = (byte) (header[index] | (1 << offerset));
+        } else {
+            header[index] = (byte) (header[index] & ~ (1 << offerset));
+        }
     }
 
     /**
@@ -308,7 +324,11 @@ public class HeapPage implements Page {
     public Iterator<Tuple> iterator() {
         // implement an iterator for array
         List<Tuple> tupleList = new ArrayList<>();
-        Collections.addAll(tupleList, tuples);
+        for (Tuple tuple : tuples) {
+            if (tuple != null) {
+                tupleList.add(tuple);
+            }
+        }
         return tupleList.iterator();
     }
 }

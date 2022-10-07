@@ -65,10 +65,7 @@ public class RecordId implements Serializable {
 
         RecordId other = (RecordId) o;
 
-        if (this.pageId.equals(other.pageId) && this.tupleNumber == other.tupleNumber) {
-            return true;
-        }
-        return false;
+        return this.pageId.equals(other.pageId) && this.tupleNumber == other.tupleNumber;
     }
 
     /**
@@ -79,7 +76,9 @@ public class RecordId implements Serializable {
      */
     @Override
     public int hashCode() {
-        return pageId.hashCode() + tupleNumber;
+        return String.valueOf(pageId.hashCode())
+                .concat(String.valueOf(tupleNumber))
+                .hashCode();
     }
 
 }

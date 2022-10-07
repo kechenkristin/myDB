@@ -43,7 +43,9 @@ public class HeapPageId implements PageId {
      * @see BufferPool
      */
     public int hashCode() {
-        return tableId + pgNo;
+        return String.valueOf(tableId)
+                .concat(String.valueOf(pgNo))
+                .hashCode();
     }
 
     /**
@@ -63,7 +65,7 @@ public class HeapPageId implements PageId {
         }
 
         HeapPageId other = (HeapPageId) o;
-        return (other.tableId == this.tableId && other.pgNo == other.pgNo);
+        return (other.tableId == this.tableId && this.pgNo == other.pgNo);
     }
 
     /**
