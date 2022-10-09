@@ -17,8 +17,6 @@ import java.util.*;
  * disk).
  */
 public class SeqScan implements OpIterator {
-    // todo : fix test bug
-
     private static final long serialVersionUID = 1L;
 
     // fields

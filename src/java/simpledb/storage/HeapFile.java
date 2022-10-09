@@ -77,7 +77,7 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
     public Page readPage(PageId pid) {
         int pageSize = pageSize();
-        long offset = (long) pageSize * pid.getPageNumber();
+        long offset = pid.getPageNumber() * pageSize;
         byte[] buffer = new byte[pageSize];
 
         try {
@@ -87,10 +87,7 @@ public class HeapFile implements DbFile {
                 buffer[i] = (byte) rFile.read();
             }
 
-            int tableId = pid.getTableId();
-            int padeNumber = pid.getPageNumber();
-            HeapPageId heapPageId = new HeapPageId(tableId, padeNumber);
-            HeapPage heapPage = new HeapPage(heapPageId, buffer);
+            HeapPage heapPage = new HeapPage((HeapPageId) pid, buffer);
             rFile.close();
             return heapPage;
         } catch (Exception e) {
