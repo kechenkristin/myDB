@@ -6,4 +6,3 @@ out/
 .idea/
 .DS_Store
 *.zip
-dist/
