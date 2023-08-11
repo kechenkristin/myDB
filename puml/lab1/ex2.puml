@@ -17,15 +17,12 @@ interface DbFileIterator{
     +close(): void
 }
 
-DbFileIterator <|.. DbFileIterator
 
 class HeapFile {
 }
-HeapFile --|> DbFile: implements
 
 class BTreeFile {
 }
-BTreeFile --|> DbFile: implements
 
 class Table {
     -tableId: int
@@ -39,6 +36,7 @@ class Table {
 class Catalog {
     -tables: Map<Integer, Table>
     -lookUpIdByName: Map<String, Integer>
+
     +addTable(file: DbFile, name: String, pkeyField: String): void
     +addTable(file: DbFile, name: String): void
     +addTable(file: DbFile): void
@@ -52,8 +50,13 @@ class Catalog {
     +loadSchema(catalogFile: String): void
 }
 
+DbFileIterator <|.. DbFileIterator
+HeapFile --|> DbFile: implements
+BTreeFile --|> DbFile: implements
 Catalog --> Table
 Catalog --> DbFile: uses
 Catalog --> DbFileIterator: uses
 Table --> DbFile: Contains
+
+Catalog "1" --> "*" Table : contains
 @enduml

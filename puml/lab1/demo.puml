@@ -1,0 +1,121 @@
+@startuml
+interface Page {
+    +getId(): PageId
+    +isDirty(): TransactionId
+    +markDirty(dirty: boolean, tid: TransactionId): void
+    +getPageData(): byte[]
+    +getBeforeImage(): Page
+    +setBeforeImage(): void
+    +deleteTuple(t: Tuple): void
+    +insertTuple(t: Tuple): void
+    +getNumEmptySlots(): int
+    +isSlotUsed(i: int): boolean
+    +markSlotUsed(i: int, value: boolean): void
+    +iterator(): Iterator<Tuple>
+}
+
+interface PageId {
+    +serialize(): int[]
+    +getTableId(): int
+    +hashCode(): int
+    +equals(o: Object): boolean
+    +getPageNumber(): int
+}
+
+class HeapPage {
+}
+
+class HeapPageId {
+}
+
+class TupleDesc {
+}
+
+class Tuple {
+}
+
+class RecordId {
+}
+
+class Database {
+}
+
+interface DbFile {
+    +readPage(id: PageId): Page
+    +writePage(p: Page): void
+    +insertTuple(tid: TransactionId, t: Tuple): List<Page>
+    +deleteTuple(tid: TransactionId, t: Tuple): List<Page>
+    +iterator(tid: TransactionId): DbFileIterator
+    +getId(): int
+    +getTupleDesc(): TupleDesc
+}
+
+interface DbFileIterator {
+    +open(): void
+    +hasNext(): boolean
+    +next(): Tuple
+    +rewind(): void
+    +close(): void
+}
+
+class HeapFile {
+}
+
+class BTreeFile {
+}
+
+class Catalog {
+}
+
+class Table {
+}
+
+
+enum Type {
+  +INT_TYPE
+  +STRING_TYPE
+}
+
+
+Catalog --> Table : uses
+Catalog "1" --> "*" Table : contains
+Catalog --> DbFile : uses
+Catalog --> DbFileIterator : uses
+
+Tuple "1" --> "1" TupleDesc : has
+Tuple "1" *-up- "0..*" Field : contains
+Tuple <-down- Tuple$FieldInterator : creates
+Tuple "1" --> "1" RecordId : has
+
+TupleDesc "1" -- "1" TupleDesc$TDItem : contains
+TupleDesc "1" -- "*" TupleDesc$tupleDescIterator : creates
+
+RecordId --> PageId: has
+RecordId <-- HeapPage : use
+
+
+TupleDesc$TDItem --> Type: has
+
+Field --> Type : uses
+Field <-- IntField
+Field <-- StringField
+
+
+HeapPage "1" --> "1" TupleDesc : has
+HeapPage "1" --> "*" Tuple : has
+HeapPage --> HeapPageId : has
+HeapPageId --|> PageId
+HeapPage --|> Page
+
+HeapFile --|> DbFile
+BTreeFile --|> DbFile
+Table --> DbFile : Contains
+
+Page <-- DbFile : uses
+Page --> PageId: has
+
+Database --> Catalog : uses
+Database --> BufferPool : uses
+Database --> LogFile : uses
+
+@enduml

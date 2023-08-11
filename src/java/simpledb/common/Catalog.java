@@ -1,8 +1,8 @@
 package simpledb.common;
 
-import simpledb.common.Type;
 import simpledb.storage.DbFile;
 import simpledb.storage.HeapFile;
+import simpledb.storage.Table;
 import simpledb.storage.TupleDesc;
 
 import java.io.BufferedReader;

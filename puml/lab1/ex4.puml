@@ -1,0 +1,105 @@
+@startuml
+interface Page {
+    +getId(): PageId
+    +isDirty(): TransactionId
+    +markDirty(dirty: boolean, tid: TransactionId): void
+    +getPageData(): byte[]
+    +getBeforeImage(): Page
+    +setBeforeImage(): void
+    +deleteTuple(t: Tuple): void
+    +insertTuple(t: Tuple): void
+    +getNumEmptySlots(): int
+    +isSlotUsed(i: int): boolean
+    +markSlotUsed(i: int, value: boolean): void
+    +iterator(): Iterator<Tuple>
+}
+
+interface PageId {
+    +serialize(): int[]
+    +getTableId(): int
+    +hashCode(): int
+    +equals(o: Object): boolean
+    +getPageNumber(): int
+}
+
+
+class HeapPage {
+    -pid: HeapPageId
+    -td: TupleDesc
+    -header: byte[]
+    -tuples: Tuple[]
+    -numSlots: int
+    -oldData: byte[]
+    -oldDataLock: Byte
+
+    +HeapPage(id: HeapPageId, data: byte[])
+    +getNumTuples(): int
+    +getHeaderSize(): int
+    +getBeforeImage(): HeapPage
+    +setBeforeImage(): void
+    +getId(): HeapPageId
+    +getPageData(): byte[]
+    +readNextTuple(dis: DataInputStream, slotId: int): Tuple
+    +createEmptyPageData(): byte[]
+    +deleteTuple(t: Tuple): void
+    +insertTuple(t: Tuple): void
+    +markDirty(dirty: boolean, tid: TransactionId): void
+    +isDirty(): TransactionId
+    +getNumEmptySlots(): int
+    +isSlotUsed(i: int): boolean
+    +markSlotUsed(i: int, value: boolean): void
+    +iterator(): Iterator<Tuple>
+}
+
+class HeapPageId {
+    -tableId: int
+    -pageNumber: int
+
+    +HeapPageId(tableId: int, pgNo: int)
+    +getTableId(): int
+    +getPageNumber(): int
+    +hashCode(): int
+    +equals(o: Object): boolean
+    +serialize(): int[]
+}
+
+class TupleDesc {
+    +TupleDesc(fields: Type[], names: String[])
+    +getSize(): int
+    +numFields(): int
+    +getFieldType(i: int): Type
+}
+
+class Tuple {
+    -fields: Field[]
+    -rid: RecordId
+
+    +Tuple(td: TupleDesc)
+    +setField(i: int, f: Field): void
+    +getField(i: int): Field
+    +setRecordId(rid: RecordId): void
+}
+
+class RecordId {
+    -pid: PageId
+    -tupleNo: int
+    +RecordId(pid: PageId, tupleNo: int)
+    +getPageId(): PageId
+    +getTupleNumber(): int
+}
+
+
+
+HeapPage "1" --> "1" TupleDesc: has
+HeapPage "1" --> "*"Tuple: has
+HeapPage --> HeapPageId: has
+HeapPageId --|> PageId
+HeapPage --|> Page
+
+Tuple "1" --> "1" RecordId: has
+RecordId --> PageId: has
+RecordId --> HeapPage : use
+
+
+
+@enduml

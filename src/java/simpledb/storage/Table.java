@@ -1,4 +1,4 @@
-package simpledb.common;
+package simpledb.storage;
 
 import simpledb.storage.DbFile;
 

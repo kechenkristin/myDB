@@ -1,0 +1,60 @@
+@startuml
+class Database {
+    -_catalog: Catalog
+    -_bufferpool: BufferPool
+    -_logfile: LogFile
+
+    +getLogFile(): LogFile
+    +getBufferPool(): BufferPool
+    +getCatalog(): Catalog
+    +resetBufferPool(pages: int): BufferPool
+    +reset(): void
+}
+
+class BufferPool {
+    -DEFAULT_PAGE_SIZE: int
+    -pageSize: int
+    +DEFAULT_PAGES: int
+    -numPages: int
+    -pages: Map<PageId, Page>
+    -pageOrder: LinkedList<PageId>
+
+    +getPage(tid: TransactionId, pid: PageId, perm: Permissions): Page
+}
+
+class Catalog {
+    -tables: Map<Integer, Table>
+    -lookUpIdByName: Map<String, Integer>
+
+    +Catalog()
+    +addTable(file: DbFile, name: String, pkeyField: String): void
+    +addTable(file: DbFile, name: String): void
+    +addTable(file: DbFile): void
+    +getTableId(tableName: String): int
+    +getTupleDesc(tableid: int): TupleDesc
+    +getDatabaseFile(tableId: int): DbFile
+    +getPrimaryKey(tableId: int): String
+    +tableIdIterator(): Iterator<Integer>
+    +getTableName(tableId: int): String
+    +clear(): void
+    +loadSchema(catalogFile: String): void
+}
+
+
+interface DbFile {
+    +readPage(id: PageId): Page
+    +writePage(p: Page): void
+    +insertTuple(tid: TransactionId, t: Tuple): List<Page>
+    +deleteTuple(tid: TransactionId, t: Tuple): List<Page>
+    +iterator(tid: TransactionId): DbFileIterator
+    +getId(): int
+    +getTupleDesc(): TupleDesc
+}
+
+
+Database --> Catalog
+Database --> BufferPool
+Database --> LogFile
+
+Catalog --> DbFile: use
+@enduml

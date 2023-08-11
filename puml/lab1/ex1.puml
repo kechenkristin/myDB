@@ -1,5 +1,6 @@
 @startuml
 class TupleDesc {
+  - TDItem[] items
   +TupleDesc(Type[] typeAr, String[] fieldAr)
   +TupleDesc(Type[] typeAr)
   +TupleDesc(TDItem[] items)
@@ -84,7 +85,8 @@ class RecordId {
   // ... RecordId class implementation ...
 }
 
-Tuple --> TupleDesc : has
+Tuple "1" --> "1" TupleDesc : has
+
 Tuple --> RecordId : uses
 Tuple --> Field : uses
 Field --> Type : uses
@@ -92,6 +94,12 @@ IntField --> Type : uses
 StringField --> Type : uses
 Field <-- IntField : implements
 Field <-- StringField : implements
+
 Tuple "1" *-up- "0..*" Field : contains
 Tuple <|-down- Tuple$FieldInterator : creates
+
+TupleDesc "1" -- "1" TupleDesc$TDItem : contains
+TupleDesc "1" -- "*" TupleDesc$tupleDescIterator : creates
+
+TupleDesc$TDItem --> Type: has
 @enduml
