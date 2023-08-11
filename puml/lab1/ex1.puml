@@ -1,0 +1,97 @@
+@startuml
+class TupleDesc {
+  +TupleDesc(Type[] typeAr, String[] fieldAr)
+  +TupleDesc(Type[] typeAr)
+  +TupleDesc(TDItem[] items)
+  +numFields(): int
+  +getFieldName(i: int): String
+  +getFieldType(i: int): Type
+  +fieldNameToIndex(name: String): int
+  +getSize(): int
+  +merge(td1: TupleDesc, td2: TupleDesc): TupleDesc
+  +equals(o: Object): boolean
+  +hashCode(): int
+  +toString(): String
+}
+
+class TupleDesc$TDItem {
+  +Type fieldType
+  +String fieldName
+  +TDItem(Type t, String n)
+  +toString(): String
+}
+
+class TupleDesc$tupleDescIterator {
+  +int ptr
+  +tupleDescIterator()
+  +hasNext(): boolean
+  +next(): TDItem
+}
+
+enum Type {
+  +INT_TYPE
+  +STRING_TYPE
+  +getLen(): int
+  +parse(dis: DataInputStream): Field
+}
+
+interface Field {
+  +serialize(dos: DataOutputStream): void
+  +compare(op: Predicate.Op, value: Field): boolean
+  +getType(): Type
+  +hashCode(): int
+  +equals(field: Object): boolean
+  +toString(): String
+}
+
+class IntField {
+  +getValue(): int
+  +IntField(i: int)
+  +toString(): String
+  +hashCode(): int
+  +equals(field: Object): boolean
+  +serialize(dos: DataOutputStream): void
+  +compare(op: Predicate.Op, val: Field): boolean
+  +getType(): Type
+}
+
+class StringField {
+  +getValue(): String
+  +StringField(s: String, maxSize: int)
+  +toString(): String
+  +hashCode(): int
+  +equals(field: Object): boolean
+  +serialize(dos: DataOutputStream): void
+  +compare(op: Predicate.Op, val: Field): boolean
+  +getType(): Type
+}
+
+class Tuple {
+  +Tuple(TupleDesc td)
+  +setTupleDesc(tupleDesc: TupleDesc): void
+  +getTupleDesc(): TupleDesc
+  +getRecordId(): RecordId
+  +setRecordId(rid: RecordId): void
+  +setField(i: int, f: Field): void
+  +getField(i: int): Field
+  +toString(): String
+  +fields(): Iterator<Field>
+  +resetTupleDesc(td: TupleDesc): void
+  +FieldInterator
+}
+
+class RecordId {
+  // ... RecordId class implementation ...
+}
+
+Tuple --> TupleDesc : has
+Tuple --> RecordId : uses
+Tuple --> Field : uses
+Field --> Type : uses
+IntField --> Type : uses
+StringField --> Type : uses
+Field <-- IntField : implements
+Field <-- StringField : implements
+Tuple "1" *-up- "0..*" Field : contains
+Tuple <|-down- Tuple$FieldInterator : creates
+@enduml

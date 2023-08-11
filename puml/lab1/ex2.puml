@@ -1,0 +1,59 @@
+@startuml
+interface DbFile {
+    +readPage(id: PageId): Page
+    +writePage(p: Page): void
+    +insertTuple(tid: TransactionId, t: Tuple): List<Page>
+    +deleteTuple(tid: TransactionId, t: Tuple): List<Page>
+    +iterator(tid: TransactionId): DbFileIterator
+    +getId(): int
+    +getTupleDesc(): TupleDesc
+}
+
+interface DbFileIterator{
+    +open(): void
+    +hasNext(): boolean
+    +next(): Tuple
+    +rewind(): void
+    +close(): void
+}
+
+DbFileIterator <|.. DbFileIterator
+
+class HeapFile {
+}
+HeapFile --|> DbFile: implements
+
+class BTreeFile {
+}
+BTreeFile --|> DbFile: implements
+
+class Table {
+    -tableId: int
+    -dbFile: DbFile
+    -tableName: String
+    -pkName: String
+
+    +Table(dbFile: DbFile, tableName: String, pkName: String)
+}
+
+class Catalog {
+    -tables: Map<Integer, Table>
+    -lookUpIdByName: Map<String, Integer>
+    +addTable(file: DbFile, name: String, pkeyField: String): void
+    +addTable(file: DbFile, name: String): void
+    +addTable(file: DbFile): void
+    +getTableId(tableName: String): int
+    +getTupleDesc(tableid: int): TupleDesc
+    +getDatabaseFile(tableId: int): DbFile
+    +getPrimaryKey(tableId: int): String
+    +tableIdIterator(): Iterator<Integer>
+    +getTableName(tableId: int): String
+    +clear(): void
+    +loadSchema(catalogFile: String): void
+}
+
+Catalog --> Table
+Catalog --> DbFile: uses
+Catalog --> DbFileIterator: uses
+Table --> DbFile: Contains
+@enduml
