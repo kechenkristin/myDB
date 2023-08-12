@@ -88,7 +88,6 @@ class RecordId {
 Tuple "1" --> "1" TupleDesc : has
 
 Tuple --> RecordId : uses
-Tuple --> Field : uses
 Field --> Type : uses
 IntField --> Type : uses
 StringField --> Type : uses

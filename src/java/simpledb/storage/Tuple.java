@@ -97,7 +97,7 @@ public class Tuple implements Serializable {
         return str.toString();
     }
 
-    public class FieldInterator implements Iterator<Field> {
+    class FieldInterator implements Iterator<Field> {
 
         private int ptr;
 

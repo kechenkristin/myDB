@@ -1,0 +1,55 @@
+@startuml
+
+class Database {
+    +getCatalog(): Catalog
+}
+
+class Catalog{}
+
+interface OpIterator {
+    +open(): void
+    +hasNext(): boolean
+    +next(): Tuple
+    +rewind(): void
+    +getTupleDesc(): TupleDesc
+    +close(): void
+}
+
+class SeqScan {
+    -tid: TransactionId
+    -tableId: int
+    -tableAlias: String
+
+    +SeqScan(tid: TransactionId, tableId: int, tableAlias: String)
+    +getTableName(): String
+    +getAlias(): String
+    +reset(tableId: int, tableAlias: String): void
+    +SeqScan(tid: TransactionId, tableId: int)
+}
+
+interface DbFile{}
+interface DbFileIterator{}
+
+
+enum Type {
+  +INT_TYPE
+  +STRING_TYPE
+}
+
+OpIterator <|.. SeqScan
+Database --> Catalog: has
+Catalog --> DbFile: use(tableId)
+DbFile --> TupleDesc: has
+TupleDesc --> TupleDesc$TDItem
+
+TupleDesc$TDItem --> Type: has
+TupleDesc$TDItem --> StringFieldName: has
+
+Tuple "1" --> "1" TupleDesc : has
+
+DbFile ..> DbFileIterator
+
+SeqScan --> Catalog: ask Catalog to get tupleDes and DbFile by using tableId
+SeqScan --> DbFileIterator: has
+SeqScan --> TupleDesc: create new
+@enduml

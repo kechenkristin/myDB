@@ -76,10 +76,20 @@ enum Type {
   +STRING_TYPE
 }
 
+HeapFile ..|> DbFile
+BTreeFile ..|> DbFile
+Table --> DbFile : Contains
 
-Catalog --> Table : uses
+DbFile --> Page: uses
+DbFile --> TupleDesc: has
+DbFile --> DbFileIterator: has
+
+Database --> Catalog : uses
+Database --> BufferPool : uses
+Database --> LogFile : uses
+
 Catalog "1" --> "*" Table : contains
-Catalog --> DbFile : uses
+Catalog --> DbFile : uses(tableId)
 Catalog --> DbFileIterator : uses
 
 Tuple "1" --> "1" TupleDesc : has
@@ -104,18 +114,11 @@ Field <-- StringField
 HeapPage "1" --> "1" TupleDesc : has
 HeapPage "1" --> "*" Tuple : has
 HeapPage --> HeapPageId : has
-HeapPageId --|> PageId
-HeapPage --|> Page
+HeapPageId ..|> PageId
+HeapPage ..|> Page
 
-HeapFile --|> DbFile
-BTreeFile --|> DbFile
-Table --> DbFile : Contains
-
-Page <-- DbFile : uses
 Page --> PageId: has
 
-Database --> Catalog : uses
-Database --> BufferPool : uses
-Database --> LogFile : uses
-
+HeapFile --> HeapFileIterator: has
+HeapFileIterator ..|> DbFileIterator
 @enduml
