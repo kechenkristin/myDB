@@ -24,6 +24,7 @@ public class HeapFile implements DbFile {
 
     private File file;
     private TupleDesc tupleDesc;
+    private BufferPool bufferPool;
 
     /**
      * Constructs a heap file backed by the specified file.
@@ -34,6 +35,7 @@ public class HeapFile implements DbFile {
     public HeapFile(File f, TupleDesc td) {
         file = f;
         tupleDesc = td;
+        bufferPool = Database.getBufferPool();
     }
 
     /**
@@ -96,8 +98,14 @@ public class HeapFile implements DbFile {
 
     // see DbFile.java for javadocs
     public void writePage(Page page) throws IOException {
-        // some code goes here
-        // not necessary for lab1
+        int pageSize = BufferPool.getPageSize();
+        int pageNumber = page.getId().getPageNumber();
+        int offset = pageSize * pageNumber;
+
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw")) {
+            randomAccessFile.seek(offset);
+            randomAccessFile.write(page.getPageData());
+        }
     }
 
     /**
@@ -111,17 +119,39 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
     public List<Page> insertTuple(TransactionId tid, Tuple t)
             throws DbException, IOException, TransactionAbortedException {
-        // some code goes here
-        return null;
-        // not necessary for lab1
+        List<Page> modified = new ArrayList<>();
+        for(int i=0; i<numPages(); i++){
+            HeapPage page = (HeapPage) bufferPool.getPage(tid, new HeapPageId(this.getId(), i),Permissions.READ_WRITE);
+            // when the slot is empty, can release the page into the slot.
+            if (page.getNumEmptySlots() == 0){
+                bufferPool.unsafeReleasePage(tid, page.getId());
+                continue;
+            }
+            page.insertTuple(t);
+            modified.add(page);
+            return modified;
+        }
+        // when all pages are full, we need to create new page to let the file in
+        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file, true));
+        byte[] emptyPageData = HeapPage.createEmptyPageData();
+        // add data at the end of the file
+        outputStream.write(emptyPageData);
+        outputStream.close();
+        // load the page into cache, attention, the numpage()-1 is used because now a new page is created.
+        HeapPage page = (HeapPage) bufferPool.getPage(tid, new HeapPageId(getId(), numPages() - 1), Permissions.READ_WRITE);
+        page.insertTuple(t);
+        modified.add(page);
+        return modified;
     }
 
     // see DbFile.java for javadocs
     public ArrayList<Page> deleteTuple(TransactionId tid, Tuple t) throws DbException,
             TransactionAbortedException {
-        // some code goes here
-        return null;
-        // not necessary for lab1
+        HeapPage page = (HeapPage) bufferPool.getPage(tid, t.getRecordId().getPageId(), Permissions.READ_WRITE);
+        page.deleteTuple(t);
+        ArrayList<Page> modified = new ArrayList<>();
+        modified.add(page);
+        return modified;
     }
 
     private class HeapFileIterator implements DbFileIterator {
