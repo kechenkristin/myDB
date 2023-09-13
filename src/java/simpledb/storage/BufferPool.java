@@ -9,6 +9,7 @@ import simpledb.transaction.TransactionId;
 
 import java.io.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,8 +35,88 @@ public class BufferPool {
     constructor instead. */
     public static final int DEFAULT_PAGES = 50;
 
-    private int numOfPages;
-    private Map<PageId, Page> pageCache;
+
+    private static class LinkNode {
+        PageId pageId;
+        Page page;
+        LinkNode prev;
+        LinkNode next;
+
+        public LinkNode(PageId pageId, Page page) {
+            this.pageId = pageId;
+            this.page = page;
+        }
+    }
+
+    private Map<PageId, LinkNode> pageCache;
+    private int capacity;
+    private LinkNode head;
+    private LinkNode tail;
+
+
+    private void remove(LinkNode node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+
+
+
+    private void addToHead(LinkNode node) {
+        LinkNode oldFirst = head.next;
+        head.next = node;
+        node.prev = head;
+        node.next = oldFirst;
+        oldFirst.prev = node;
+    }
+
+    private LinkNode deleteLastNode() {
+        LinkNode node = tail.prev;
+        remove(node);
+        return node;
+    }
+
+    private void moveNodeToHead(LinkNode node){
+        remove(node);
+        addToHead(node);
+    }
+
+    /**
+     *
+     * @return The size of current LRUCache
+     */
+    private int getSize() {
+        return pageCache.size();
+    }
+
+    /**
+     * returns true if the LRUCache is oversize
+     */
+    private boolean overSize() {
+        return getSize() >= capacity;
+    }
+
+    /**
+     * returns true if the cache contains the page with the given pageId
+     */
+    private boolean containsPage(PageId pageId) {
+        return pageCache.containsKey(pageId);
+    }
+
+    private DbFile getDbFile(PageId pid) {
+        return Database.getCatalog().getDatabaseFile(pid.getTableId());
+    }
+
+    private void updateBufferPool(List<Page> pageList, TransactionId tid) throws DbException {
+        for (Page page : pageList) {
+            page.markDirty(true, tid);
+
+            if (overSize()) evictPage();
+
+            LinkNode node = pageCache.get(page.getId());
+            node.page = page;
+            pageCache.put(page.getId(), node);
+        }
+    }
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -43,8 +124,12 @@ public class BufferPool {
      * @param numPages maximum number of pages in this buffer pool.
      */
     public BufferPool(int numPages) {
-        this.numOfPages = numPages;
-        pageCache = new ConcurrentHashMap<>();
+        this.capacity = numPages;
+        pageCache = new ConcurrentHashMap<>(capacity);
+        head = new LinkNode(new HeapPageId(-1, -1), null);
+        tail = new LinkNode(new HeapPageId(-1, -1), null);
+        head.next = tail;
+        tail.prev = head;
     }
     
     public static int getPageSize() {
@@ -78,12 +163,19 @@ public class BufferPool {
      */
     public  Page getPage(TransactionId tid, PageId pid, Permissions perm)
         throws TransactionAbortedException, DbException {
-        if(!pageCache.containsKey(pid)){
-            DbFile dbFile = Database.getCatalog().getDatabaseFile(pid.getTableId());
+        if(!containsPage(pid)){
+            DbFile dbFile = getDbFile(pid);
             Page page = dbFile.readPage(pid);
-            pageCache.put(pid,page);
+
+            if (overSize()) evictPage();
+
+            LinkNode node = new LinkNode(pid, page);
+            pageCache.put(pid, node);
+            addToHead(node);
         }
-        return pageCache.get(pid);
+        LinkNode node = pageCache.get(pid);
+        moveNodeToHead(node);
+        return node.page;
     }
 
     /**
@@ -146,8 +238,9 @@ public class BufferPool {
      */
     public void insertTuple(TransactionId tid, int tableId, Tuple t)
         throws DbException, IOException, TransactionAbortedException {
-        // some code goes here
-        // not necessary for lab1
+        DbFile dbFile = Database.getCatalog().getDatabaseFile(tableId);
+        List<Page> pageList = dbFile.insertTuple(tid, t);
+        updateBufferPool(pageList, tid);
     }
 
     /**
@@ -165,8 +258,9 @@ public class BufferPool {
      */
     public  void deleteTuple(TransactionId tid, Tuple t)
         throws DbException, IOException, TransactionAbortedException {
-        // some code goes here
-        // not necessary for lab1
+        DbFile dbFile = getDbFile(t.getRecordId().getPageId());
+        List<Page> pageList = dbFile.deleteTuple(tid, t);
+        updateBufferPool(pageList, tid);
     }
 
     /**
@@ -175,9 +269,9 @@ public class BufferPool {
      *     break simpledb if running in NO STEAL mode.
      */
     public synchronized void flushAllPages() throws IOException {
-        // some code goes here
-        // not necessary for lab1
-
+        for (PageId pid : pageCache.keySet()) {
+            flushPage(pid);
+        }
     }
 
     /** Remove the specific page id from the buffer pool.
@@ -189,8 +283,8 @@ public class BufferPool {
         are removed from the cache so they can be reused safely
     */
     public synchronized void discardPage(PageId pid) {
-        // some code goes here
-        // not necessary for lab1
+        remove(pageCache.get(pid));
+        pageCache.remove(pid);
     }
 
     /**
@@ -198,8 +292,13 @@ public class BufferPool {
      * @param pid an ID indicating the page to flush
      */
     private synchronized  void flushPage(PageId pid) throws IOException {
-        // some code goes here
-        // not necessary for lab1
+        Page page = pageCache.get(pid).page;
+
+        if (page.isDirty() != null) {
+            DbFile dbFile = getDbFile(pid);
+            dbFile.writePage(page);
+            page.markDirty(false, null);
+        }
     }
 
     /** Write all pages of the specified transaction to disk.
@@ -214,8 +313,15 @@ public class BufferPool {
      * Flushes the page to disk to ensure dirty pages are updated on disk.
      */
     private synchronized  void evictPage() throws DbException {
-        // some code goes here
-        // not necessary for lab1
+        LinkNode tail = deleteLastNode();
+        PageId pid = tail.pageId;
+
+        try {
+            flushPage(pid);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        pageCache.remove(pid);
     }
 
 }

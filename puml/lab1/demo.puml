@@ -118,6 +118,7 @@ HeapPageId ..|> PageId
 HeapPage ..|> Page
 
 Page --> PageId: has
+PageId --> Table: has (tableId)
 
 HeapFile --> HeapFileIterator: has
 HeapFileIterator ..|> DbFileIterator
