@@ -19,30 +19,41 @@ public abstract class AggHandler {
     public Map<Field, Integer> getAggResult() {
         return aggResult;
     }
+
+    void updateAggResult(Map<Field, Integer> aggResult, Field gbField, int value) {
+        if (aggResult.containsKey(gbField)) {
+            aggResult.put(gbField, calculateAggregation(aggResult.get(gbField), value));
+        } else {
+            aggResult.put(gbField, value);
+        }
+    }
+
+    abstract int calculateAggregation(int existingValue, int newValue);
 }
+
+
 
 class CountHandler extends AggHandler{
     @Override
     void handle(Field gbField, IntField aggField) {
-        if(aggResult.containsKey(gbField)){
-            aggResult.put(gbField, aggResult.get(gbField) + 1);
-        }
-        else{
-            aggResult.put(gbField, 1);
-        }
+        updateAggResult(aggResult, gbField, 1);
+    }
+
+    @Override
+    int calculateAggregation(int existingValue, int newValue) {
+        return existingValue + newValue;
     }
 }
 
 class SumHandler extends AggHandler{
     @Override
     void handle(Field gbField, IntField aggField) {
-        int value = aggField.getValue();
-        if(aggResult.containsKey(gbField)){
-            aggResult.put(gbField, aggResult.get(gbField) + value);
-        }
-        else{
-            aggResult.put(gbField, value);
-        }
+        updateAggResult(aggResult, gbField, aggField.getValue());
+    }
+
+    @Override
+    int calculateAggregation(int existingValue, int newValue) {
+        return existingValue + newValue;
     }
 }
 
@@ -50,12 +61,12 @@ class MaxHandler extends AggHandler{
     @Override
     void handle(Field gbField, IntField aggField) {
         int value = aggField.getValue();
-        if(aggResult.containsKey(gbField)){
-            aggResult.put(gbField,Math.max(aggResult.get(gbField), value));
-        }
-        else{
-            aggResult.put(gbField, value);
-        }
+        updateAggResult(aggResult, gbField, Math.max(aggResult.getOrDefault(gbField, Integer.MIN_VALUE), value));
+    }
+
+    @Override
+    int calculateAggregation(int existingValue, int newValue) {
+        return Math.max(existingValue, newValue);
     }
 }
 
@@ -63,12 +74,12 @@ class MinHandler extends AggHandler{
     @Override
     void handle(Field gbField, IntField aggField) {
         int value = aggField.getValue();
-        if(aggResult.containsKey(gbField)){
-            aggResult.put(gbField,Math.min(aggResult.get(gbField), value));
-        }
-        else{
-            aggResult.put(gbField, value);
-        }
+        updateAggResult(aggResult, gbField, Math.min(aggResult.getOrDefault(gbField, Integer.MAX_VALUE), value));
+    }
+
+    @Override
+    int calculateAggregation(int existingValue, int newValue) {
+        return Math.min(existingValue, newValue);
     }
 }
 
@@ -88,5 +99,10 @@ class AvgHandler extends AggHandler{
             count.put(gbField, 1);
         }
         aggResult.put(gbField, sum.get(gbField) / count.get(gbField));
+    }
+
+    @Override
+    int calculateAggregation(int existingValue, int newValue) {
+        return 0;
     }
 }

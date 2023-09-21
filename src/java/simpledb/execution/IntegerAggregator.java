@@ -113,5 +113,4 @@ public class IntegerAggregator implements Aggregator {
         }
         return new TupleIterator(tupleDesc ,tuples);
     }
-
 }

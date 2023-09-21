@@ -1,10 +1,11 @@
 package simpledb.execution;
 
 import simpledb.common.Type;
-import simpledb.storage.Field;
-import simpledb.storage.Tuple;
+import simpledb.storage.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,6 +19,7 @@ public class StringAggregator implements Aggregator {
     private final int afield;
     private final Op what;
     Map<Field, Integer> aggResult;
+
 
     /**
      * Aggregate constructor
@@ -44,7 +46,16 @@ public class StringAggregator implements Aggregator {
      * @param tup the Tuple containing an aggregate field and a group-by field
      */
     public void mergeTupleIntoGroup(Tuple tup) {
-        // some code goes here
+        Field gbFiled = gbfield == NO_GROUPING ? null : tup.getField(gbfield);
+        // 聚合值 由于是字符串，这里是计数，没有任何使用
+        //StringField aField = (StringField) tup.getField(afield);
+        //String newValue = aField.getValue();
+        if(aggResult.containsKey(gbFiled)){
+            aggResult.put(gbFiled, aggResult.get(gbFiled) + 1);
+        }
+        else{
+            aggResult.put(gbFiled, 1);
+        }
     }
 
     /**
@@ -56,8 +67,40 @@ public class StringAggregator implements Aggregator {
      *   aggregate specified in the constructor.
      */
     public OpIterator iterator() {
-        // some code goes here
-        throw new UnsupportedOperationException("please implement me for lab2");
+        Type[] types;
+        String[] names;
+        TupleDesc tupleDesc;
+        // 储存结果
+        List<Tuple> tuples = new ArrayList<>();
+        if(gbfield == NO_GROUPING){
+            types = new Type[]{Type.INT_TYPE};
+            names = new String[]{"aggregateVal"};
+            tupleDesc = new TupleDesc(types, names);
+            Tuple tuple = new Tuple(tupleDesc);
+            tuple.setField(0, new IntField(aggResult.get(null)));
+            tuples.add(tuple);
+        }else{
+            types = new Type[]{gbfieldtype, Type.INT_TYPE};
+            names = new String[]{"groupVal", "aggregateVal"};
+            tupleDesc = new TupleDesc(types, names);
+            for(Field field: aggResult.keySet()){
+                Tuple tuple = new Tuple(tupleDesc);
+
+                if(gbfieldtype == Type.INT_TYPE){
+                    IntField intField = (IntField) field;
+                    tuple.setField(0, intField);
+                }
+                else{
+                    StringField stringField = (StringField) field;
+                    tuple.setField(0, stringField);
+                }
+
+                IntField resultField = new IntField(aggResult.get(field));
+                tuple.setField(1, resultField);
+                tuples.add(tuple);
+            }
+        }
+        return new TupleIterator(tupleDesc, tuples);
     }
 
 }
