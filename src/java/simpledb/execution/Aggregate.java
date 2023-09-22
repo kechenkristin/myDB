@@ -1,6 +1,7 @@
 package simpledb.execution;
 
 import simpledb.common.DbException;
+import simpledb.common.Type;
 import simpledb.storage.Tuple;
 import simpledb.storage.TupleDesc;
 import simpledb.transaction.TransactionAbortedException;
@@ -16,6 +17,50 @@ import java.util.NoSuchElementException;
 public class Aggregate extends Operator {
 
     private static final long serialVersionUID = 1L;
+    int afield;
+    int gfield;
+    Aggregator.Op op;
+    OpIterator opIterator;
+    Aggregator aggregator;
+    OpIterator executor;
+
+
+
+    /**
+     * Returns the TupleDesc of this Aggregate. If there is no group by field,
+     * this will have one field - the aggregate column. If there is a group by
+     * field, the first field will be the group by field, and the second will be
+     * the aggregate value column.
+     * <p>
+     * The name of an aggregate column should be informative. For example:
+     * "aggName(aop) (child_td.getFieldName(afield))" where aop and afield are
+     * given in the constructor, and child_td is the TupleDesc of the child
+     * iterator.
+     */
+    // TODO: fix this
+    public TupleDesc getTupleDesc() {
+        return opIterator.getTupleDesc();
+    }
+
+    /**
+     * get field type to see whether it's int or string
+     */
+    private Type getFieldType() {
+        return getTupleDesc().getFieldType(afield);
+    }
+
+    /**
+     * get type for group by
+     */
+    private Type getGroupType() {
+        return gfield == 1 ? null : getTupleDesc().getFieldType(gfield);
+    }
+
+    private void constructAggregator() {
+        aggregator = ( getFieldType() == Type.INT_TYPE) ?
+                new IntegerAggregator(gfield, getGroupType(), afield, op) :
+                new StringAggregator(gfield, getGroupType(), afield, op);
+    }
 
     /**
      * Constructor.
@@ -31,7 +76,13 @@ public class Aggregate extends Operator {
      * @param aop    The aggregation operator to use
      */
     public Aggregate(OpIterator child, int afield, int gfield, Aggregator.Op aop) {
-        // some code goes here
+        this.afield = afield;
+        this.gfield = gfield;
+        op = aop;
+
+        opIterator = child;
+        constructAggregator();
+        executor = null;
     }
 
     /**
@@ -40,8 +91,7 @@ public class Aggregate extends Operator {
      * {@link Aggregator#NO_GROUPING}
      */
     public int groupField() {
-        // some code goes here
-        return -1;
+        return gfield;
     }
 
     /**
@@ -50,16 +100,15 @@ public class Aggregate extends Operator {
      * null;
      */
     public String groupFieldName() {
-        // some code goes here
-        return null;
+        return gfield == -1 ? getTupleDesc().getFieldName(gfield) : null;
     }
+
 
     /**
      * @return the aggregate field
      */
     public int aggregateField() {
-        // some code goes here
-        return -1;
+        return afield;
     }
 
     /**
@@ -67,16 +116,14 @@ public class Aggregate extends Operator {
      * tuples
      */
     public String aggregateFieldName() {
-        // some code goes here
-        return null;
+        return getTupleDesc().getFieldName(afield);
     }
 
     /**
      * @return return the aggregate operator
      */
     public Aggregator.Op aggregateOp() {
-        // some code goes here
-        return null;
+        return op;
     }
 
     public static String nameOfAggregatorOp(Aggregator.Op aop) {
@@ -85,7 +132,14 @@ public class Aggregate extends Operator {
 
     public void open() throws NoSuchElementException, DbException,
             TransactionAbortedException {
-        // some code goes here
+        opIterator.open();
+        super.open();
+        while (opIterator.hasNext()) {
+            aggregator.mergeTupleIntoGroup(opIterator.next());
+        }
+        opIterator.close();
+        executor = aggregator.iterator();
+        executor.open();
     }
 
     /**
@@ -96,43 +150,32 @@ public class Aggregate extends Operator {
      * aggregate. Should return null if there are no more tuples.
      */
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
-        // some code goes here
+        while (executor.hasNext()) {
+            return executor.next();
+        }
         return null;
     }
 
     public void rewind() throws DbException, TransactionAbortedException {
-        // some code goes here
+        executor.rewind();
     }
 
-    /**
-     * Returns the TupleDesc of this Aggregate. If there is no group by field,
-     * this will have one field - the aggregate column. If there is a group by
-     * field, the first field will be the group by field, and the second will be
-     * the aggregate value column.
-     * <p>
-     * The name of an aggregate column should be informative. For example:
-     * "aggName(aop) (child_td.getFieldName(afield))" where aop and afield are
-     * given in the constructor, and child_td is the TupleDesc of the child
-     * iterator.
-     */
-    public TupleDesc getTupleDesc() {
-        // some code goes here
-        return null;
-    }
 
     public void close() {
-        // some code goes here
+        super.close();
+        opIterator = null;
+        executor = null;
     }
 
     @Override
     public OpIterator[] getChildren() {
-        // some code goes here
-        return null;
+        return new OpIterator[] {this.opIterator};
     }
 
     @Override
     public void setChildren(OpIterator[] children) {
-        // some code goes here
+        opIterator = children[0];
+        constructAggregator();
     }
 
 }

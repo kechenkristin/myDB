@@ -3,6 +3,7 @@ package simpledb.execution;
 import simpledb.common.Type;
 import simpledb.storage.*;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,11 +14,10 @@ import java.util.Map;
  */
 public class StringAggregator implements Aggregator {
 
+    @Serial
     private static final long serialVersionUID = 1L;
     private final int gbfield;
     private final Type gbfieldtype;
-    private final int afield;
-    private final Op what;
     Map<Field, Integer> aggResult;
 
 
@@ -36,8 +36,6 @@ public class StringAggregator implements Aggregator {
         }
         this.gbfield = gbfield;
         this.gbfieldtype = gbfieldtype;
-        this.afield = afield;
-        this.what = what;
         aggResult = new HashMap<>();
     }
 
@@ -48,8 +46,6 @@ public class StringAggregator implements Aggregator {
     public void mergeTupleIntoGroup(Tuple tup) {
         Field gbFiled = gbfield == NO_GROUPING ? null : tup.getField(gbfield);
         // 聚合值 由于是字符串，这里是计数，没有任何使用
-        //StringField aField = (StringField) tup.getField(afield);
-        //String newValue = aField.getValue();
         if(aggResult.containsKey(gbFiled)){
             aggResult.put(gbFiled, aggResult.get(gbFiled) + 1);
         }
@@ -80,25 +76,7 @@ public class StringAggregator implements Aggregator {
             tuple.setField(0, new IntField(aggResult.get(null)));
             tuples.add(tuple);
         }else{
-            types = new Type[]{gbfieldtype, Type.INT_TYPE};
-            names = new String[]{"groupVal", "aggregateVal"};
-            tupleDesc = new TupleDesc(types, names);
-            for(Field field: aggResult.keySet()){
-                Tuple tuple = new Tuple(tupleDesc);
-
-                if(gbfieldtype == Type.INT_TYPE){
-                    IntField intField = (IntField) field;
-                    tuple.setField(0, intField);
-                }
-                else{
-                    StringField stringField = (StringField) field;
-                    tuple.setField(0, stringField);
-                }
-
-                IntField resultField = new IntField(aggResult.get(field));
-                tuple.setField(1, resultField);
-                tuples.add(tuple);
-            }
+            tupleDesc = IntegerAggregator.getTupleDesc(aggResult, tuples, gbfieldtype);
         }
         return new TupleIterator(tupleDesc, tuples);
     }
