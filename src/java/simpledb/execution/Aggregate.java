@@ -6,6 +6,8 @@ import simpledb.storage.Tuple;
 import simpledb.storage.TupleDesc;
 import simpledb.transaction.TransactionAbortedException;
 
+import java.io.Serial;
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 
@@ -16,6 +18,7 @@ import java.util.NoSuchElementException;
  */
 public class Aggregate extends Operator {
 
+    @Serial
     private static final long serialVersionUID = 1L;
     int afield;
     int gfield;
@@ -24,6 +27,10 @@ public class Aggregate extends Operator {
     Aggregator aggregator;
     OpIterator executor;
 
+    TupleDesc aggTD;
+    TupleDesc gbTD;
+    Type gbFieldType;
+    Type aggFieldType;
 
 
     /**
@@ -39,27 +46,48 @@ public class Aggregate extends Operator {
      */
     // TODO: fix this
     public TupleDesc getTupleDesc() {
+        return aggTD;
+    }
+
+    public TupleDesc getGbTD() {
         return opIterator.getTupleDesc();
     }
 
     /**
      * get field type to see whether it's int or string
      */
-    private Type getFieldType() {
-        return getTupleDesc().getFieldType(afield);
+    private Type getAGGFieldType() {
+        return gbTD.getFieldType(afield);
     }
 
     /**
      * get type for group by
      */
-    private Type getGroupType() {
-        return gfield == 1 ? null : getTupleDesc().getFieldType(gfield);
+    private Type getGBFieldType() {
+        return gfield == -1 ? null : gbTD.getFieldType(gfield);
     }
 
-    private void constructAggregator() {
-        aggregator = ( getFieldType() == Type.INT_TYPE) ?
-                new IntegerAggregator(gfield, getGroupType(), afield, op) :
-                new StringAggregator(gfield, getGroupType(), afield, op);
+    private Aggregator constructAggregator() {
+        return ( getAGGFieldType() == Type.INT_TYPE) ?
+                new IntegerAggregator(gfield, gbFieldType, afield, op) :
+                new StringAggregator(gfield, gbFieldType, afield, op);
+    }
+
+    private TupleDesc constructAggTD() {
+        TupleDesc.TDItem[] tdItems = new TupleDesc.TDItem[2];
+
+        if (gbFieldType != null) {
+            tdItems[0] = new TupleDesc.TDItem(gbFieldType, gbTD.getFieldName(gfield));
+        }
+
+        tdItems[1] = new TupleDesc.TDItem(aggFieldType, gbTD.getFieldName(afield));
+
+        if (op.equals(Aggregator.Op.SUM_COUNT)) {
+            tdItems = Arrays.copyOf(tdItems, 3);
+            tdItems[2] = new TupleDesc.TDItem(Type.INT_TYPE, "COUNT");
+        }
+
+        return new TupleDesc(tdItems);
     }
 
     /**
@@ -81,7 +109,12 @@ public class Aggregate extends Operator {
         op = aop;
 
         opIterator = child;
-        constructAggregator();
+        gbTD = getGbTD();
+        gbFieldType = getGBFieldType();
+        aggFieldType = getAGGFieldType();
+
+        aggregator = constructAggregator();
+        aggTD = constructAggTD();
         executor = null;
     }
 
