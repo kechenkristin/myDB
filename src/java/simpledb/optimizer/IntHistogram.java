@@ -6,6 +6,13 @@ import simpledb.execution.Predicate;
  */
 public class IntHistogram {
 
+    private int[] histogram;
+    private int numOfBuckets;
+    private int max;
+    private int min;
+    private double width;
+    private int numOfTuples;
+
     /**
      * Create a new IntHistogram.
      * 
@@ -23,7 +30,18 @@ public class IntHistogram {
      * @param max The maximum integer value that will ever be passed to this class for histogramming
      */
     public IntHistogram(int buckets, int min, int max) {
-    	// some code goes here
+        numOfBuckets = buckets;
+        this.min = min;
+        this.max = max;
+        width = (double) (max - min) / buckets;
+        histogram = new int[numOfBuckets];
+        numOfTuples = 0;
+    }
+
+    private int getIndex(int v) {
+        if (v < min || v > max) throw new IllegalArgumentException("Value out of boundary!");
+        if (v == max) return numOfBuckets -1;
+        return (int) ((v - min) / width);
     }
 
     /**
@@ -31,7 +49,9 @@ public class IntHistogram {
      * @param v Value to add to the histogram
      */
     public void addValue(int v) {
-    	// some code goes here
+        int index = getIndex(v);
+        histogram[index]++;
+        numOfTuples++;
     }
 
     /**
@@ -41,13 +61,44 @@ public class IntHistogram {
      * return your estimate of the fraction of elements that are greater than 5.
      * 
      * @param op Operator
-     * @param v Value
+     * @param constVal Value
      * @return Predicted selectivity of this particular operator and value
      */
-    public double estimateSelectivity(Predicate.Op op, int v) {
+    public double estimateSelectivity(Predicate.Op op, int constVal) {
+        double selectivity = 0.0;
 
-    	// some code goes here
-        return -1.0;
+        switch (op) {
+            case LESS_THAN:
+                if (constVal <= min) return 0.0;
+                if (constVal >= max) return 1.0;
+
+                int index = getIndex(constVal);
+
+                for (int i = 0; i < index; i++) {
+                    selectivity += (histogram[i] + 0.0) /numOfTuples;
+                }
+                selectivity += histogram[index] * ((constVal - index * width - min) / width) / numOfTuples;
+                return selectivity;
+
+            case EQUALS:
+                if (constVal < min || constVal > max) return 0.0;
+                return 1.0 * histogram[getIndex(constVal)] / ((int) width + 1) / numOfTuples;
+
+            case NOT_EQUALS:
+                return 1 - estimateSelectivity(Predicate.Op.EQUALS, constVal);
+
+            case LESS_THAN_OR_EQ:
+                return estimateSelectivity(Predicate.Op.LESS_THAN, constVal + 1);
+
+            case GREATER_THAN:
+                return 1 - estimateSelectivity(Predicate.Op.LESS_THAN_OR_EQ, constVal);
+
+            case GREATER_THAN_OR_EQ:
+                return estimateSelectivity(Predicate.Op.GREATER_THAN, constVal - 1);
+
+            default:
+                throw new UnsupportedOperationException("Operation is illegal");
+        }
     }
     
     /**
@@ -58,17 +109,26 @@ public class IntHistogram {
      *     join optimization. It may be needed if you want to
      *     implement a more efficient optimization
      * */
-    public double avgSelectivity()
-    {
-        // some code goes here
-        return 1.0;
+    public double avgSelectivity() {
+        double avg = 0.0;
+        for (int i = 0; i < numOfBuckets; i++) {
+            avg += (histogram[i] + 0.0) / numOfTuples;
+        }
+        return avg;
     }
     
     /**
      * @return A string describing this histogram, for debugging purposes
      */
     public String toString() {
-        // some code goes here
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < histogram.length; i++) {
+            double b_l = i * width;
+            double b_r = (i + 1) * width;
+            sb.append(String.format("[%f, %f]: %d\n", b_l, b_r, histogram[i]));
+        }
+
+        return sb.toString();
     }
 }
