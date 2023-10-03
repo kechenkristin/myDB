@@ -40,6 +40,7 @@ public class IntegerAggregator implements Aggregator {
         gbFieldType = gbfieldtype;
         aField = afield;
 
+        /*
         switch (what) {
             case MIN -> aggHandler = new MinHandler();
             case MAX -> aggHandler = new MaxHandler();
@@ -47,6 +48,27 @@ public class IntegerAggregator implements Aggregator {
             case SUM -> aggHandler = new SumHandler();
             case COUNT -> aggHandler = new CountHandler();
             default -> throw new IllegalArgumentException("Aggregator doesn't support this operator!");
+        }
+         */
+
+        switch (what) {
+            case MIN:
+                aggHandler = new MinHandler();
+                break;
+            case MAX:
+                aggHandler = new MaxHandler();
+                break;
+            case AVG:
+                aggHandler = new AvgHandler();
+                break;
+            case SUM:
+                aggHandler = new SumHandler();
+                break;
+            case COUNT:
+                aggHandler = new CountHandler();
+                break;
+            default:
+                throw new IllegalArgumentException("Aggregator doesn't support this operator!");
         }
     }
 

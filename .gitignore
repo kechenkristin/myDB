@@ -1,8 +1,12 @@
 log
 bin/
 out/
+dist/
 *.db
 *.iml
 .idea/
 .DS_Store
 *.zip
+*.txt
+*.dat
+*.png

@@ -55,9 +55,10 @@ public class HeapPageId implements PageId {
             return true;
         }
 
-        if (! (o instanceof HeapPageId toCompare)) {
-            return false;
-        }
+//        if (! (o instanceof HeapPageId toCompare)) {
+//            return false;
+//        }
+        HeapPageId toCompare = (HeapPageId) o;
 
         return this.pageNumber == toCompare.getPageNumber() && this.tableId == toCompare.getTableId();
     }
