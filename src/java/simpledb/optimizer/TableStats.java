@@ -1,11 +1,14 @@
 package simpledb.optimizer;
 
 import simpledb.common.Database;
+import simpledb.common.DbException;
 import simpledb.common.Type;
 import simpledb.execution.Predicate;
 import simpledb.execution.SeqScan;
 import simpledb.storage.*;
 import simpledb.transaction.Transaction;
+import simpledb.transaction.TransactionAbortedException;
+import simpledb.transaction.TransactionId;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,6 +71,9 @@ public class TableStats {
      */
     static final int NUM_HIST_BINS = 100;
 
+    private int tableId;
+    private TupleDesc tupleDesc;
+
     /**
      * Create a new TableStats object, that keeps track of statistics on each
      * column of a table
@@ -79,14 +85,53 @@ public class TableStats {
      *            sequential-scan IO and disk seeks.
      */
     public TableStats(int tableid, int ioCostPerPage) {
-        // For this function, you'll have to get the
-        // DbFile for the table in question,
-        // then scan through its tuples and calculate
-        // the values that you need.
-        // You should try to do this reasonably efficiently, but you don't
-        // necessarily have to (for example) do everything
-        // in a single scan of the table.
-        // some code goes here
+        tableId = tableid;
+        DbFile table = Database.getCatalog().getDatabaseFile(tableId);
+        tupleDesc = table.getTupleDesc();
+    }
+
+    /**
+     * Help construct histogram
+     */
+    private void constructHistogram() throws TransactionAbortedException, DbException {
+       int numOfFields = tupleDesc.numFields();
+
+        Map<Integer, Integer> minField = new HashMap<>();
+        Map<Integer, Integer> maxField = new HashMap<>();
+
+       SeqScan seqScan = new SeqScan(new TransactionId(), tableId);
+
+       seqScan.open();
+
+       // first iteration, get the max/min value for each column (INT TYPE)
+       while (seqScan.hasNext()) {
+           Tuple tuple = seqScan.next();
+           for (int i = 0; i < numOfFields; i++) {
+               if (fieldTypeIsInt(i)) {
+                    int value = getIntFieldVal(tuple, i);
+                    if (maxField.get(i) == null || value > maxField.get(i)) maxField.put(i, value);
+                    if (minField.get(i) == null || value < minField.get(i)) minField.put(i, value);
+               }
+           }
+       }
+
+       seqScan.rewind();
+
+       // second iteration, construct the Histogram
+        for (int i = 0; i < numOfFields; i++) {
+
+        }
+    }
+
+    /**
+     * return true if the field type is int
+     */
+    private boolean fieldTypeIsInt(int fieldIndex) {
+        return tupleDesc.getFieldType(fieldIndex).equals(Type.INT_TYPE);
+    }
+
+    private int getIntFieldVal(Tuple tuple, int fieldIndex) {
+        return ((IntField) tuple.getField(fieldIndex)).getValue();
     }
 
     /**
