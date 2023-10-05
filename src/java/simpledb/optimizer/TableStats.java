@@ -6,11 +6,9 @@ import simpledb.common.Type;
 import simpledb.execution.Predicate;
 import simpledb.execution.SeqScan;
 import simpledb.storage.*;
-import simpledb.transaction.Transaction;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,8 +69,13 @@ public class TableStats {
      */
     static final int NUM_HIST_BINS = 100;
 
+    private int pageNum;
+    private int ioCostPerPage;
     private int tableId;
     private TupleDesc tupleDesc;
+    private int totalTuples;
+    private Map<Integer, IntHistogram> intHistogramMap;
+    private Map<Integer, StringHistogram> stringHistogramMap;
 
     /**
      * Create a new TableStats object, that keeps track of statistics on each
@@ -85,9 +88,23 @@ public class TableStats {
      *            sequential-scan IO and disk seeks.
      */
     public TableStats(int tableid, int ioCostPerPage) {
+        this.ioCostPerPage = ioCostPerPage;
+
         tableId = tableid;
         DbFile table = Database.getCatalog().getDatabaseFile(tableId);
+        pageNum = ((HeapFile) table).numPages();
+
         tupleDesc = table.getTupleDesc();
+        intHistogramMap = new ConcurrentHashMap<>();
+        stringHistogramMap = new ConcurrentHashMap<>();
+
+        totalTuples = 0;
+
+        try {
+            constructHistogram();
+        } catch (TransactionAbortedException | DbException e){
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -96,8 +113,8 @@ public class TableStats {
     private void constructHistogram() throws TransactionAbortedException, DbException {
        int numOfFields = tupleDesc.numFields();
 
-        Map<Integer, Integer> minField = new HashMap<>();
-        Map<Integer, Integer> maxField = new HashMap<>();
+        Map<Integer, Integer> minField = new ConcurrentHashMap<>();
+        Map<Integer, Integer> maxField = new ConcurrentHashMap<>();
 
        SeqScan seqScan = new SeqScan(new TransactionId(), tableId);
 
@@ -106,6 +123,7 @@ public class TableStats {
        // first iteration, get the max/min value for each column (INT TYPE)
        while (seqScan.hasNext()) {
            Tuple tuple = seqScan.next();
+           totalTuples++;
            for (int i = 0; i < numOfFields; i++) {
                if (fieldTypeIsInt(i)) {
                     int value = getIntFieldVal(tuple, i);
@@ -119,8 +137,28 @@ public class TableStats {
 
        // second iteration, construct the Histogram
         for (int i = 0; i < numOfFields; i++) {
-
+            seqScan.rewind();
+            if (fieldTypeIsInt(i)) {
+                int minVal = minField.get(i);
+                int maxVal = maxField.get(i);
+                IntHistogram intHistogram = new IntHistogram(NUM_HIST_BINS, minVal, maxVal);
+                while (seqScan.hasNext()) {
+                    Tuple tuple = seqScan.next();
+                    int fieldVal = getIntFieldVal(tuple, i);
+                    intHistogram.addValue(fieldVal);
+                }
+                intHistogramMap.put(i, intHistogram);
+            } else {
+                StringHistogram stringHistogram = new StringHistogram(NUM_HIST_BINS);
+                while (seqScan.hasNext()) {
+                    Tuple tuple = seqScan.next();
+                    String stringField = getStringFieldVal(tuple, i);
+                    stringHistogram.addValue(stringField);
+                }
+                stringHistogramMap.put(i, stringHistogram);
+            }
         }
+        seqScan.close();
     }
 
     /**
@@ -132,6 +170,10 @@ public class TableStats {
 
     private int getIntFieldVal(Tuple tuple, int fieldIndex) {
         return ((IntField) tuple.getField(fieldIndex)).getValue();
+    }
+
+    private String getStringFieldVal(Tuple tuple, int fieldIndex) {
+        return ((StringField) tuple.getField(fieldIndex)).getValue();
     }
 
     /**
@@ -147,8 +189,7 @@ public class TableStats {
      * @return The estimated cost of scanning the table.
      */
     public double estimateScanCost() {
-        // some code goes here
-        return 0;
+        return pageNum * ioCostPerPage * 1.0;
     }
 
     /**
@@ -161,13 +202,12 @@ public class TableStats {
      *         selectivityFactor
      */
     public int estimateTableCardinality(double selectivityFactor) {
-        // some code goes here
-        return 0;
+        return ((int) (totalTuples * selectivityFactor));
     }
 
     /**
      * The average selectivity of the field under op.
-     * @param field
+     * @param fieldIndex
      *        the index of the field
      * @param op
      *        the operator in the predicate
@@ -175,16 +215,16 @@ public class TableStats {
      * tuple, of which we do not know the value of the field, return the
      * expected selectivity. You may estimate this value from the histograms.
      * */
-    public double avgSelectivity(int field, Predicate.Op op) {
-        // some code goes here
-        return 1.0;
+    public double avgSelectivity(int fieldIndex, Predicate.Op op) {
+        if (fieldTypeIsInt(fieldIndex)) return intHistogramMap.get(fieldIndex).avgSelectivity();
+        return stringHistogramMap.get(fieldIndex).avgSelectivity();
     }
 
     /**
      * Estimate the selectivity of predicate <tt>field op constant</tt> on the
      * table.
      * 
-     * @param field
+     * @param fieldIndex
      *            The field over which the predicate ranges
      * @param op
      *            The logical operation in the predicate
@@ -193,17 +233,16 @@ public class TableStats {
      * @return The estimated selectivity (fraction of tuples that satisfy) the
      *         predicate
      */
-    public double estimateSelectivity(int field, Predicate.Op op, Field constant) {
-        // some code goes here
-        return 1.0;
+    public double estimateSelectivity(int fieldIndex, Predicate.Op op, Field constant) {
+        if (fieldTypeIsInt(fieldIndex)) return intHistogramMap.get(fieldIndex).estimateSelectivity(op, ((IntField) constant).getValue());
+        return stringHistogramMap.get(fieldIndex).estimateSelectivity(op, ((StringField) constant).getValue());
     }
 
     /**
      * return the total number of tuples in this table
      * */
     public int totalTuples() {
-        // some code goes here
-        return 0;
+        return totalTuples;
     }
 
 }
