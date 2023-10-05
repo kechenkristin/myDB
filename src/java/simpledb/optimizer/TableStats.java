@@ -244,5 +244,4 @@ public class TableStats {
     public int totalTuples() {
         return totalTuples;
     }
-
 }
