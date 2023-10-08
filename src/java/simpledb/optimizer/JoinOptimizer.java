@@ -250,14 +250,59 @@ public class JoinOptimizer {
      *             when stats or filter selectivities is missing a table in the
      *             join, or or when another internal error occurs
      */
+
+    /*
+1. j = set of join nodes
+2. for (i in 1...|j|):
+3.     for s in {all length i subsets of j}
+4.       bestPlan = {}
+5.       for s' in {all length d-1 subsets of s}
+6.            subplan = optjoin(s')
+7.            plan = best way to join (s-s') to subplan
+8.            if (cost(plan) < cost(bestPlan))
+9.               bestPlan = plan
+10.      optjoin(s) = bestPlan
+11. return optjoin(j)
+     */
     public List<LogicalJoinNode> orderJoins(
             Map<String, TableStats> stats,
             Map<String, Double> filterSelectivities, boolean explain)
             throws ParsingException {
+        PlanCache planCache = new PlanCache();
+        CostCard bestCostCard = new CostCard();
 
-        // some code goes here
-        //Replace the following
-        return joins;
+        // join连接对数量
+        int size = joins.size();
+        // 动态规划,求出每一层子集的最佳连接计划
+        for (int i = 1; i <= size; i++) {
+            // 找出给定size的所有子集
+            Set<Set<LogicalJoinNode>> subsets = enumerateSubsets(joins, i);
+            // 计算每个子集最佳连接计划
+            for (Set<LogicalJoinNode> subset : subsets) {
+                double bestCostSoFar = Double.MAX_VALUE;
+                for (LogicalJoinNode joinNode : subset) {
+                    CostCard costCard =
+                            computeCostAndCardOfSubplan(stats, filterSelectivities, joinNode, subset, bestCostSoFar, planCache);
+                    // 返回null,说明无法进行JOIN操作或者当前计算得出的连接成本比已经求出的最低成本贵
+                    if (costCard == null) {
+                        continue;
+                    }
+                    bestCostSoFar = costCard.cost;
+                    bestCostCard = costCard;
+                }
+                if (bestCostSoFar != Double.MAX_VALUE) {
+                    planCache.addPlan(subset, bestCostCard.cost, bestCostCard.card, bestCostCard.plan);
+                }
+            }
+        }
+        // 是否需要输出执行计划
+        if (explain) {
+            printJoins(bestCostCard.plan, planCache, stats, filterSelectivities);
+        }
+        // 最终动态规划计算得到的最佳JOIN计划
+        // 例如: <t1,t2>,<t2,t3>,<t4,t3> --> 对应的SQL JOIN表示为
+        // t4 join (t1 join t2 join t3)
+        return bestCostCard.plan;
     }
 
     // ===================== Private Methods =================================
