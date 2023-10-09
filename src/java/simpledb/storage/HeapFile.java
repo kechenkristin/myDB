@@ -124,6 +124,7 @@ public class HeapFile implements DbFile {
             HeapPage page = (HeapPage) bufferPool.getPage(tid, new HeapPageId(this.getId(), i),Permissions.READ_WRITE);
             // when the slot is empty, can release the page into the slot.
             if (page.getNumEmptySlots() == 0){
+                //当该page上没有空slot时，释放该page上的锁，避免影响其他事务的访问
                 bufferPool.unsafeReleasePage(tid, page.getId());
                 continue;
             }

@@ -1,9 +1,6 @@
 package simpledb.storage;
 
-import simpledb.common.Database;
-import simpledb.common.Permissions;
-import simpledb.common.DbException;
-import simpledb.common.DeadlockException;
+import simpledb.common.*;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
@@ -11,6 +8,7 @@ import java.io.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -35,6 +33,8 @@ public class BufferPool {
     constructor instead. */
     public static final int DEFAULT_PAGES = 50;
 
+    /* attributes for lab4 */
+    private LockManager lockManager;
 
     private static class LinkNode {
         PageId pageId;
@@ -48,6 +48,7 @@ public class BufferPool {
         }
     }
 
+    /* attributes for evict */
     private Map<PageId, LinkNode> pageCache;
     private int capacity;
     private LinkNode head;
@@ -130,6 +131,7 @@ public class BufferPool {
         tail = new LinkNode(new HeapPageId(-1, -1), null);
         head.next = tail;
         tail.prev = head;
+        lockManager = new LockManager();
     }
     
     public static int getPageSize() {
@@ -163,6 +165,23 @@ public class BufferPool {
      */
     public  Page getPage(TransactionId tid, PageId pid, Permissions perm)
         throws TransactionAbortedException, DbException {
+
+        // lab4: 在返回页面前阻塞并获取所需的锁
+        int acquireType = perm == Permissions.READ_WRITE ? 1 : 0;
+
+        long startTime = System.currentTimeMillis();
+        long timeout = new Random().nextInt(2000) + 1000;
+
+        while (true) {
+            try {
+                if (lockManager.acquireLock(pid, tid, acquireType)) break;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            long now = System.currentTimeMillis();
+            if (now - startTime > timeout) throw new TransactionAbortedException();
+        }
+
         if(!containsPage(pid)){
             DbFile dbFile = getDbFile(pid);
             Page page = dbFile.readPage(pid);
@@ -185,11 +204,10 @@ public class BufferPool {
      * calling it.
      *
      * @param tid the ID of the transaction requesting the unlock
-     * @param pid the ID of the page to unlock
+     * @param pageId the ID of the page to unlock
      */
-    public  void unsafeReleasePage(TransactionId tid, PageId pid) {
-        // some code goes here
-        // not necessary for lab1|lab2
+    public  void unsafeReleasePage(TransactionId tid, PageId pageId) {
+        lockManager.releaseLock(pageId, tid);
     }
 
     /**
@@ -203,10 +221,8 @@ public class BufferPool {
     }
 
     /** Return true if the specified transaction has a lock on the specified page */
-    public boolean holdsLock(TransactionId tid, PageId p) {
-        // some code goes here
-        // not necessary for lab1|lab2
-        return false;
+    public boolean holdsLock(TransactionId tid, PageId pageId) {
+        return lockManager.isHoldLock(pageId, tid);
     }
 
     /**
