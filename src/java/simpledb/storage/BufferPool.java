@@ -107,17 +107,6 @@ public class BufferPool {
         return Database.getCatalog().getDatabaseFile(pid.getTableId());
     }
 
-    private void updateBufferPool(List<Page> pageList, TransactionId tid) throws DbException {
-        for (Page page : pageList) {
-            page.markDirty(true, tid);
-
-            if (overSize()) evictPage();
-
-            LinkNode node = pageCache.get(page.getId());
-            node.page = page;
-            pageCache.put(page.getId(), node);
-        }
-    }
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -211,18 +200,74 @@ public class BufferPool {
     }
 
     /**
+     * Flushes a certain page to disk
+     * @param pid an ID indicating the page to flush
+     */
+    private synchronized  void flushPage(PageId pid) throws IOException {
+        Page page = pageCache.get(pid).page;
+
+        if (page.isDirty() != null) {
+            DbFile dbFile = getDbFile(pid);
+            dbFile.writePage(page);
+            page.markDirty(false, null);
+        }
+    }
+
+    /** Write all pages of the specified transaction to disk.
+     */
+    public synchronized  void flushPages(TransactionId tid) throws IOException {
+        for (Map.Entry<PageId, LinkNode> entry : pageCache.entrySet()) {
+            Page page = entry.getValue().page;
+            page.setBeforeImage();
+            if (page.isDirty() == tid) flushPage(page.getId());
+        }
+    }
+
+    /**
+     * Flush all dirty pages to disk.
+     * NB: Be careful using this routine -- it writes dirty data to disk so will
+     *     break simpledb if running in NO STEAL mode.
+     */
+    public synchronized void flushAllPages() throws IOException {
+        for (PageId pid : pageCache.keySet()) {
+            flushPage(pid);
+        }
+    }
+
+    private void updateBufferPool(List<Page> pageList, TransactionId tid) throws DbException {
+        for (Page page : pageList) {
+            page.markDirty(true, tid);
+
+            if (overSize()) evictPage();
+
+            LinkNode node = pageCache.get(page.getId());
+            node.page = page;
+            pageCache.put(page.getId(), node);
+        }
+    }
+
+
+
+    /** Remove the specific page id from the buffer pool.
+     Needed by the recovery manager to ensure that the
+     buffer pool doesn't keep a rolled back page in its
+     cache.
+
+     Also used by B+ tree files to ensure that deleted pages
+     are removed from the cache so they can be reused safely
+     */
+    public synchronized void discardPage(PageId pid) {
+        remove(pageCache.get(pid));
+        pageCache.remove(pid);
+    }
+
+    /**
      * Release all locks associated with a given transaction.
      *
      * @param tid the ID of the transaction requesting the unlock
      */
     public void transactionComplete(TransactionId tid) {
-        // some code goes here
-        // not necessary for lab1|lab2
-    }
-
-    /** Return true if the specified transaction has a lock on the specified page */
-    public boolean holdsLock(TransactionId tid, PageId pageId) {
-        return lockManager.isHoldLock(pageId, tid);
+        transactionComplete(tid, true);
     }
 
     /**
@@ -233,9 +278,43 @@ public class BufferPool {
      * @param commit a flag indicating whether we should commit or abort
      */
     public void transactionComplete(TransactionId tid, boolean commit) {
-        // some code goes here
-        // not necessary for lab1|lab2
+        if (commit) {
+            try {
+                flushPages(tid);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            // 回滚事务,从磁盘加载旧页完成回滚
+            recoverPages(tid);
+        }
+        lockManager.completeTransaction(tid);
     }
+
+    private synchronized void recoverPages(TransactionId tid) {
+        for (Map.Entry<PageId, LinkNode> entry: pageCache.entrySet()) {
+            PageId pageId = entry.getKey();
+            Page page = entry.getValue().page;
+
+            if (page.isDirty() == tid) {
+                DbFile dbFile = getDbFile(pageId);
+                Page cleanPage = dbFile.readPage(pageId);
+
+                LinkNode node = pageCache.get(pageId);
+                node.page = cleanPage;
+                pageCache.put(pageId, node);
+            }
+        }
+   }
+
+
+
+    /** Return true if the specified transaction has a lock on the specified page */
+    public boolean holdsLock(TransactionId tid, PageId pageId) {
+        return lockManager.isHoldLock(pageId, tid);
+    }
+
+
 
     /**
      * Add a tuple to the specified table on behalf of transaction tid.  Will
@@ -279,56 +358,14 @@ public class BufferPool {
         updateBufferPool(pageList, tid);
     }
 
-    /**
-     * Flush all dirty pages to disk.
-     * NB: Be careful using this routine -- it writes dirty data to disk so will
-     *     break simpledb if running in NO STEAL mode.
-     */
-    public synchronized void flushAllPages() throws IOException {
-        for (PageId pid : pageCache.keySet()) {
-            flushPage(pid);
-        }
-    }
 
-    /** Remove the specific page id from the buffer pool.
-        Needed by the recovery manager to ensure that the
-        buffer pool doesn't keep a rolled back page in its
-        cache.
-        
-        Also used by B+ tree files to ensure that deleted pages
-        are removed from the cache so they can be reused safely
-    */
-    public synchronized void discardPage(PageId pid) {
-        remove(pageCache.get(pid));
-        pageCache.remove(pid);
-    }
-
-    /**
-     * Flushes a certain page to disk
-     * @param pid an ID indicating the page to flush
-     */
-    private synchronized  void flushPage(PageId pid) throws IOException {
-        Page page = pageCache.get(pid).page;
-
-        if (page.isDirty() != null) {
-            DbFile dbFile = getDbFile(pid);
-            dbFile.writePage(page);
-            page.markDirty(false, null);
-        }
-    }
-
-    /** Write all pages of the specified transaction to disk.
-     */
-    public synchronized  void flushPages(TransactionId tid) throws IOException {
-        // some code goes here
-        // not necessary for lab1|lab2
-    }
 
     /**
      * Discards a page from the buffer pool.
      * Flushes the page to disk to ensure dirty pages are updated on disk.
      */
     private synchronized  void evictPage() throws DbException {
+        /*
         LinkNode tail = deleteLastNode();
         PageId pid = tail.pageId;
 
@@ -338,6 +375,23 @@ public class BufferPool {
             throw new RuntimeException(e);
         }
         pageCache.remove(pid);
+         */
+
+        for (int i = 0; i < capacity; i++) {
+            LinkNode tail = deleteLastNode();
+            Page evitPage = tail.page;
+
+            if (evitPage.isDirty() != null) {
+                // 不扔髒頁，提高髒頁優先級， 但不把髒頁寫回磁盤(flushPage())
+                addToHead(tail);
+            } else {
+                // 扔乾淨頁
+                PageId evictPageId = tail.pageId;
+                discardPage(evictPageId);
+                return;
+            }
+        }
+        throw new DbException("All pages are dirty");
     }
 
 }
