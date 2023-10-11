@@ -1,17 +1,14 @@
 package simpledb.storage;
 
-import simpledb.common.*;
 import simpledb.common.Database;
 import simpledb.common.Permissions;
 import simpledb.common.DbException;
-import simpledb.common.DeadlockException;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 import simpledb.common.LockManager;
 
 import java.io.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -74,6 +71,10 @@ public class BufferPool {
         BufferPool.pageSize = DEFAULT_PAGE_SIZE;
     }
 
+    private DbFile getDbFile(int tableId) {
+        return Database.getCatalog().getDatabaseFile(tableId);
+    }
+
     /**
      * Retrieve the specified page with the associated permissions.
      * Will acquire a lock and may block if that lock is held by another
@@ -112,7 +113,7 @@ public class BufferPool {
         }
         // some code goes here
         if(!pageCache.containsKey(pid)){
-            DbFile dbFile = Database.getCatalog().getDatabaseFile(pid.getTableId());
+            DbFile dbFile = getDbFile(pid.getTableId());
             Page page = dbFile.readPage(pid);
             evict.modifyData(pid);
             if(pageCache.size() == numPages){
@@ -186,7 +187,7 @@ public class BufferPool {
             Page page = entry.getValue();
             if (page.isDirty() == tid) {
                 int tableId = pid.getTableId();
-                DbFile dbFile = Database.getCatalog().getDatabaseFile(tableId);
+                DbFile dbFile = getDbFile(tableId);
                 Page cleanPage = dbFile.readPage(pid);
                 pageCache.put(pid, cleanPage);
             }
@@ -212,7 +213,7 @@ public class BufferPool {
             throws DbException, IOException, TransactionAbortedException {
         // some code goes here
         // not necessary for lab1
-        DbFile dbFile = Database.getCatalog().getDatabaseFile(tableId);
+        DbFile dbFile = getDbFile(tableId);
         updateBufferPool(dbFile.insertTuple(tid, t), tid);
     }
 
@@ -233,7 +234,7 @@ public class BufferPool {
             throws DbException, IOException, TransactionAbortedException {
         // some code goes here
         // not necessary for lab1
-        DbFile dbFile = Database.getCatalog().getDatabaseFile(t.getRecordId().getPageId().getTableId());
+        DbFile dbFile = getDbFile(t.getRecordId().getPageId().getTableId());
         updateBufferPool(dbFile.deleteTuple(tid, t), tid);
     }
 
@@ -288,7 +289,7 @@ public class BufferPool {
         Page flush = pageCache.get(pid);
 
         int tableId = pid.getTableId();
-        DbFile dbFile = Database.getCatalog().getDatabaseFile(tableId);
+        DbFile dbFile = getDbFile(tableId);
 
         TransactionId dirtier = flush.isDirty();
         if (dirtier != null) {
