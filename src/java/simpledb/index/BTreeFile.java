@@ -187,8 +187,29 @@ public class BTreeFile implements DbFile {
 	private BTreeLeafPage findLeafPage(TransactionId tid, Map<PageId, Page> dirtypages, BTreePageId pid, Permissions perm,
                                        Field f)
 					throws DbException, TransactionAbortedException {
-		// some code goes here
-        return null;
+		// 如果f为null,那么直接找到内部节点的最左侧孩子节点指针进行遍历
+		if (f == null) {
+			if (pid.pgcateg() == BTreePageId.LEAF) return (BTreeLeafPage) getPage(tid, dirtypages, pid, perm);
+			BTreeInternalPage page = (BTreeInternalPage) getPage(tid, dirtypages, pid, perm);
+			BTreePageId childId = page.getChildId(0);
+			return findLeafPage(tid, dirtypages, childId, perm, f);
+		}
+
+		// 1. 获取数据页类型
+		int type = pid.pgcateg();
+		// 2.如果是leaf page，递归结束，说明找到了
+		if (type == BTreePageId.LEAF) return (BTreeLeafPage) getPage(tid, dirtypages, pid, perm);
+		// 3.读取internal page要使用READ_ONLY perm
+		BTreeInternalPage internalPage = (BTreeInternalPage) getPage(tid, dirtypages, pid, Permissions.READ_ONLY);
+		// 4.获取该页面的entries
+		Iterator<BTreeEntry> bTreeEntryIterator = internalPage.iterator();
+		BTreeEntry entry = null;
+		while (bTreeEntryIterator.hasNext()) {
+			entry = bTreeEntryIterator.next();
+			Field key = entry.getKey();
+			if (key.compare(Op.GREATER_THAN_OR_EQ, f)) return findLeafPage(tid, dirtypages, entry.getLeftChild(), perm, f);
+		}
+		return findLeafPage(tid, dirtypages, entry.getRightChild(), perm, f);
 	}
 	
 	/**
@@ -239,8 +260,58 @@ public class BTreeFile implements DbFile {
 		// the new entry.  getParentWithEmtpySlots() will be useful here.  Don't forget to update
 		// the sibling pointers of all the affected leaf pages.  Return the page into which a 
 		// tuple with the given key field should be inserted.
-        return null;
-		
+
+		// 获取叶子节点元组的数量
+		int numTuples = page.getNumTuples();
+		// 获取一个空的叶子页
+		BTreeLeafPage rightPage = (BTreeLeafPage) getEmptyPage(tid, dirtypages, BTreePageId.LEAF);
+		// 分裂,将原始叶子页中的一半元素拷贝到空的叶子页中
+		Iterator<Tuple> iterator = page.iterator();
+		int num = numTuples / 2;
+		// 先遍历一半元素
+		while (num > 0) {
+			iterator.next();
+			num--;
+		}
+
+		// 然后遍历剩余的元组，插入到新的叶子页中，并记录要插入父节点的key
+		Field key = null;
+		while (iterator.hasNext()) {
+			Tuple tuple = iterator.next();
+			// 新页面的第一个元组的key为复制到父节点的key
+			if (key == null) key = tuple.getField(page.keyField);
+			// 从原始的叶子页中删除元组
+			page.deleteTuple(tuple);
+			// 向新页中插入元组
+			rightPage.insertTuple(tuple);
+		}
+
+		// 更新兄弟指针
+		BTreePageId rightSiblingId = page.getRightSiblingId();
+		if (rightSiblingId != null) {
+			BTreeLeafPage rightSibling = (BTreeLeafPage) getPage(tid, dirtypages, rightSiblingId, Permissions.READ_WRITE);
+			rightSibling.setLeftSiblingId(rightPage.getId());
+			rightPage.setRightSiblingId(rightSiblingId);
+			dirtypages.put(rightSiblingId, rightSibling);
+		}
+		rightPage.setLeftSiblingId(page.getId());
+		page.setRightSiblingId(rightPage.getId());
+
+		// 向父节点插入新的entry
+		BTreeEntry entry = new BTreeEntry(key, page.getId(), rightPage.getId());
+		BTreeInternalPage parent = getParentWithEmptySlots(tid, dirtypages, page.getParentId(), key);
+		parent.insertEntry(entry);
+
+		// 将脏页记录到dirtypages中
+		dirtypages.put(page.getId(), page);
+		dirtypages.put(rightPage.getId(), rightPage);
+		dirtypages.put(parent.getId(), parent);
+
+		// 由于父页面的变更，更新原始页和新页的父指针
+		updateParentPointer(tid, dirtypages, parent.getId(), page.getId());
+		updateParentPointer(tid, dirtypages, parent.getId(), rightPage.getId());
+
+		return field.compare(Op.LESS_THAN_OR_EQ, key) ? page : rightPage;
 	}
 	
 	/**
@@ -277,7 +348,45 @@ public class BTreeFile implements DbFile {
 		// the parent pointers of all the children moving to the new page.  updateParentPointers()
 		// will be useful here.  Return the page into which an entry with the given key field
 		// should be inserted.
-		return null;
+
+		// 记录page中entry的数量
+		int numEntries = page.getNumEntries();
+		// 创建新的BTreeInternalPage
+		BTreeInternalPage internalPage = (BTreeInternalPage) getEmptyPage(tid, dirtypages, BTreePageId.INTERNAL);
+
+		Iterator<BTreeEntry> iterator = page.reverseIterator();
+		// 将原始页中的一半元素移动到新的内部节点页中
+		int num = numEntries / 2;
+		while (num > 0) {
+			BTreeEntry entry = iterator.next();
+			page.deleteKeyAndLeftChild(entry);
+			internalPage.insertEntry(entry);
+			num--;
+		}
+
+		// 推到父节点的entry
+		BTreeEntry pushEntry = iterator.next();
+		page.deleteKeyAndRightChild(pushEntry);
+
+		// 记录脏页
+		dirtypages.put(page.getId(), page);
+		dirtypages.put(internalPage.getId(), internalPage);
+
+		// 更新孩子指针
+		pushEntry.setLeftChild(page.getId());
+		pushEntry.setRightChild(internalPage.getId());
+
+		// 由于页间元素的移动，更新这些页中元素的孩子指针
+		updateParentPointers(tid, dirtypages, page);
+		updateParentPointers(tid, dirtypages, internalPage);
+
+		// 父节点，getParentWithEmptySlots会递归地调用splitInternalPage方法
+		BTreeInternalPage parent = getParentWithEmptySlots(tid, dirtypages, page.getParentId(), pushEntry.getKey());
+		parent.insertEntry(pushEntry);
+		dirtypages.put(parent.getId(), parent);
+		updateParentPointers(tid, dirtypages, parent);
+
+		return field.compare(Op.LESS_THAN, pushEntry.getKey()) ? page : internalPage;
 	}
 	
 	/**

@@ -71,7 +71,7 @@ less obvious case is if we are given a key value of 6.  There may be duplicate
 keys, so there could be 6's on both leaf pages. In this case, the function
 should return the first (left) leaf page.
 
-<p align="center"> <img width=500 src="../imgs/simple_tree.png"><br> <i>Figure 1: A
+<p align="center"> <img width=500 src="simple_tree.png"><br> <i>Figure 1: A
 simple B+ Tree with duplicate keys</i> </p>
 
 
@@ -167,7 +167,7 @@ actually fall in the exact center of the tuples/entries to be split.  You should
 ignore the key during the split, and only use it to determine which of the two
 pages to return.)
 
-<p align="center"> <img width=500 src="../imgs/splitting_leaf.png"><br> <img width=500
+<p align="center"> <img width=500 src="splitting_leaf.png"><br> <img width=500
 src="imgs/splitting_internal.png"><br> <i>Figure 2: Splitting pages</i> </p>
 
 
@@ -285,10 +285,10 @@ a B+Tree may cause pages to redistribute tuples (Figure 3) or, eventually, to
 merge (see Figure 4). You may find it useful to review section 10.6 in the
 textbook.
 
-<p align="center"> <img width=500 src="../imgs/redist_leaf.png"><br> <img width=500
+<p align="center"> <img width=500 src="redist_leaf.png"><br> <img width=500
 src="imgs/redist_internal.png"><br> <i>Figure 3: Redistributing pages</i> </p>
 
-<p align="center"> <img width=500 src="../imgs/merging_leaf.png"><br> <img width=500
+<p align="center"> <img width=500 src="merging_leaf.png"><br> <img width=500
 src="imgs/merging_internal.png"><br> <i>Figure 4: Merging pages</i> </p>
 
 As described in the textbook, attempting to delete a tuple from a leaf page that

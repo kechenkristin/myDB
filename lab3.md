@@ -90,7 +90,7 @@ Before getting started with the implementation, you need to understand the overa
 optimizer.  The overall control flow of the SimpleDB modules of the parser and optimizer is shown in Figure 1.
 
 <p align="center">
-<img width=400 src="../imgs/controlflow.png"><br>
+<img width=400 src="controlflow.png"><br>
 <i>Figure 1: Diagram illustrating classes, methods, and objects used in the parser</i>
 </p>
 
@@ -216,7 +216,7 @@ values in the table:
    similar to the greater than case, looking at buckets down to 0.
 
 <p align="center">
-<img width=400 src="../imgs/lab3-hist.png"><br>
+<img width=400 src="lab3-hist.png"><br>
 <i>Figure 2: Diagram illustrating the histograms you will implement in Lab 5</i>
 </p>
 
