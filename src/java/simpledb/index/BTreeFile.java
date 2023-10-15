@@ -678,6 +678,36 @@ public class BTreeFile implements DbFile {
         // Move some of the tuples from the sibling to the page so
 		// that the tuples are evenly distributed. Be sure to update
 		// the corresponding parent entry.
+
+		// 1.首先计算需要移动多少元组，然后再进行移动
+		int pageNumTuples = page.getNumTuples();
+		int siblingNumTuples = sibling.getNumTuples();
+
+		if (siblingNumTuples < pageNumTuples) return;
+
+		// 如果是右兄弟,那么从第一条记录开始steal, 如果是左兄弟,从最后一条记录开始steal
+		Iterator<Tuple> siblingIterator = null;
+		siblingIterator = isRightSibling ? sibling.iterator() : sibling.reverseIterator();
+
+		// 要steal的记录条数
+		int moveCount = siblingNumTuples - (pageNumTuples + siblingNumTuples);
+		while (moveCount > 0) {
+			Tuple tuple = siblingIterator.next();
+			sibling.deleteTuple(tuple);
+			page.insertTuple(tuple);
+			moveCount--;
+		}
+
+		// 更新entry中的key值
+		Field key = null;
+		if (isRightSibling) {
+			key = siblingIterator.next().getField(sibling.keyField);
+			entry.setKey(key);
+		} else {
+			key = page.iterator().next().getField(page.keyField);
+			entry.setKey(key);
+		}
+		parent.updateEntry(entry);
 	}
 
 	/**
