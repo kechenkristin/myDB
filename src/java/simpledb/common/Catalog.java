@@ -23,9 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Catalog {
 
-    private Map<Integer, Table> tables;
+    private final Map<Integer, Table> tables;
     /* maintain this attribute for look up id by name */
-    private Map<String, Integer> lookUpIdByName;
+    private final Map<String, Integer> lookUpIdByName;
 
     /**
      * Constructor.
@@ -109,10 +109,7 @@ public class Catalog {
     }
 
     public String getPrimaryKey(int tableId) {
-        if (tables.containsKey(tableId)) {
-            return tables.get(tableId).getPkName();
-        }
-        return null;
+        return tables.containsKey(tableId) ? tables.get(tableId).getPkName() : null;
     }
 
     public Iterator<Integer> tableIdIterator() {
@@ -120,10 +117,7 @@ public class Catalog {
     }
 
     public String getTableName(int tableId) {
-        if (tables.containsKey(tableId)) {
-            return tables.get(tableId).getTableName();
-        }
-        return null;
+        return tables.containsKey(tableId) ? tables.get(tableId).getTableName() : null;
     }
 
     /**
@@ -137,7 +131,6 @@ public class Catalog {
     /**
      * Reads the schema from a file and creates the appropriate tables in the database.
      *
-     * @param catalogFile
      */
     public void loadSchema(String catalogFile) {
         String line = "";

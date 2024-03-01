@@ -1,7 +1,5 @@
 package simpledb.storage;
 
-import simpledb.storage.DbFile;
-
 public class Table {
     private int tableId;
     private DbFile dbFile;

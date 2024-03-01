@@ -5,8 +5,8 @@ import java.util.Arrays;
 /** Unique identifier for HeapPage objects. */
 public class HeapPageId implements PageId {
 
-    private int tableId;
-    private int pageNumber;
+    private final int tableId;
+    private final int pageNumber;
 
     /**
      * Constructor. Create a page id structure for a specific page of a
@@ -55,10 +55,9 @@ public class HeapPageId implements PageId {
             return true;
         }
 
-//        if (! (o instanceof HeapPageId toCompare)) {
-//            return false;
-//        }
-        HeapPageId toCompare = (HeapPageId) o;
+        if (! (o instanceof HeapPageId toCompare)) {
+            return false;
+        }
 
         return this.pageNumber == toCompare.getPageNumber() && this.tableId == toCompare.getTableId();
     }
@@ -71,11 +70,8 @@ public class HeapPageId implements PageId {
      */
     public int[] serialize() {
         int[] data = new int[2];
-
         data[0] = getTableId();
         data[1] = getPageNumber();
-
         return data;
     }
-
 }

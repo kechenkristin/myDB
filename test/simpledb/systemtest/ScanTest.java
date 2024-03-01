@@ -73,9 +73,7 @@ public class ScanTest extends SimpleDbTestBase {
         Database.getBufferPool().transactionComplete(tid);
     }
 
-    /** Verifies that the buffer pool is actually caching data.
-     * @throws TransactionAbortedException
-     * @throws DbException */
+    /** Verifies that the buffer pool is actually caching data.   */
     @Test public void testCache() throws IOException, DbException, TransactionAbortedException {
         /* Counts the number of readPage operations. */
         class InstrumentedHeapFile extends HeapFile {
@@ -111,7 +109,6 @@ public class ScanTest extends SimpleDbTestBase {
     }
 
     /** Verifies SeqScan's getTupleDesc prefixes the table name + "." to the field names
-     * @throws IOException
      */
     @Test public void testTupleDesc() throws IOException {
         List<List<Integer>> tuples = new ArrayList<>();

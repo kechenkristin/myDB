@@ -2,7 +2,6 @@ package simpledb.storage;
 
 import simpledb.common.Database;
 import simpledb.common.DbException;
-import simpledb.common.Debug;
 import simpledb.common.Catalog;
 import simpledb.transaction.TransactionId;
 
@@ -96,7 +95,7 @@ public class HeapPage implements Page {
      */
     public HeapPage getBeforeImage() {
         try {
-            byte[] oldDataRef = null;
+            byte[] oldDataRef;
             synchronized (oldDataLock) {
                 oldDataRef = oldData;
             }
@@ -212,6 +211,10 @@ public class HeapPage implements Page {
 
         // padding
         int zerolen = BufferPool.getPageSize() - (header.length + td.getSize() * tuples.length); //- numSlots * td.getSize();
+        return getBytes(baos, dos, zerolen);
+    }
+
+    public static byte[] getBytes(ByteArrayOutputStream baos, DataOutputStream dos, int zerolen) {
         byte[] zeroes = new byte[zerolen];
         try {
             dos.write(zeroes, 0, zerolen);
@@ -358,7 +361,7 @@ public class HeapPage implements Page {
      * (note that this iterator shouldn't return tuples in empty slots!)
      */
     public Iterator<Tuple> iterator() {
-        List<Tuple> filledTuples = new LinkedList<Tuple>();
+        List<Tuple> filledTuples = new LinkedList<>();
         for (int i = 0; i < tuples.length; ++i) {
             if (isSlotUsed(i)) {
                 filledTuples.add(tuples[i]);

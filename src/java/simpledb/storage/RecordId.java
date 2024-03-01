@@ -53,10 +53,10 @@ public class RecordId implements Serializable {
             return true;
         }
 
-//        if (! (o instanceof RecordId toCompare)) {
-//            return false;
-//        }
-        RecordId toCompare = (RecordId) o;
+        if (! (o instanceof RecordId toCompare)) {
+            return false;
+        }
+        // RecordId toCompare = (RecordId) o;
 
         return this.pageId.equals(toCompare.pageId) && this.tupleNo == toCompare.getTupleNumber();
     }
@@ -72,5 +72,4 @@ public class RecordId implements Serializable {
         int prime = 31;
         return pageId.hashCode() * prime + tupleNo;
     }
-
 }

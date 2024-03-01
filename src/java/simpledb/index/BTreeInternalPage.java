@@ -14,6 +14,8 @@ import simpledb.storage.Field;
 import simpledb.storage.IntField;
 import simpledb.storage.RecordId;
 
+import static simpledb.storage.HeapPage.getBytes;
+
 /**
  * Each instance of BTreeInternalPage stores data for one page of a BTreeFile and 
  * implements the Page interface that is used by BufferPool.
@@ -320,22 +322,9 @@ public class BTreeInternalPage extends BTreePage {
 
 		// padding
 		int zerolen = BufferPool.getPageSize() - (INDEX_SIZE + 1 + header.length + 
-				td.getFieldType(keyField).getLen() * (keys.length - 1) + INDEX_SIZE * children.length); 
-		byte[] zeroes = new byte[zerolen];
-		try {
-			dos.write(zeroes, 0, zerolen);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		try {
-			dos.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return baos.toByteArray();
-	}
+				td.getFieldType(keyField).getLen() * (keys.length - 1) + INDEX_SIZE * children.length);
+        return getBytes(baos, dos, zerolen);
+    }
 
 	/**
 	 * Delete the specified entry (key + 1 child pointer) from the page. The recordId

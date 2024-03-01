@@ -11,6 +11,8 @@ import simpledb.storage.*;
 import java.util.*;
 import java.io.*;
 
+import static simpledb.storage.HeapPage.getBytes;
+
 /**
  * Each instance of BTreeLeafPage stores data for one page of a BTreeFile and 
  * implements the Page interface that is used by BufferPool.
@@ -266,21 +268,8 @@ public class BTreeLeafPage extends BTreePage {
 
 		// padding
 		int zerolen = BufferPool.getPageSize() - (header.length + td.getSize() * tuples.length + 3 * INDEX_SIZE); //- numSlots * td.getSize();
-		byte[] zeroes = new byte[zerolen];
-		try {
-			dos.write(zeroes, 0, zerolen);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		try {
-			dos.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return baos.toByteArray();
-	}
+        return getBytes(baos, dos, zerolen);
+    }
 
 	/**
 	 * Delete the specified tuple from the page;  the tuple should be updated to reflect

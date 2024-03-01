@@ -38,16 +38,14 @@ public class BufferPool {
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
-     *
-     * @param numPages maximum number of pages in this buffer pool.
      */
 
-    private int numPages;
-    private Map<PageId, Page> pageCache;
+    private final int numPages;
+    private final Map<PageId, Page> pageCache;
     // for Lab2
-    private LRUEvict evict;
+    private final LRUEvict evict;
     // for lab3
-    private LockManager lockManager;
+    private final LockManager lockManager;
 
     public BufferPool(int numPages) {
         // some code goes here
@@ -291,12 +289,14 @@ public class BufferPool {
         int tableId = pid.getTableId();
         DbFile dbFile = getDbFile(tableId);
 
+        // append an update record to the log, with a before-image and after-image
         TransactionId dirtier = flush.isDirty();
         if (dirtier != null) {
             Database.getLogFile().logWrite(dirtier, flush.getBeforeImage(), flush);
             Database.getLogFile().force();
         }
 
+        // 将page刷新到磁盘
         dbFile.writePage(flush);
         flush.markDirty(false, null);
     }

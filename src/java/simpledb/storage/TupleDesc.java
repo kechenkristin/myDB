@@ -225,13 +225,14 @@ public class TupleDesc implements Serializable {
             return true;
         }
 
-//        if (!(o instanceof TupleDesc toCompare)) {
-//            return false;
-//        }
+        if (!(o instanceof TupleDesc toCompare)) {
+            return false;
+        }
 
-        TupleDesc toCompare = (TupleDesc) o;
-
+//        TupleDesc toCompare = (TupleDesc) o;
+//
         if (numFields() != toCompare.numFields()) return false;
+
         // name can be null
         for (int i = 0; i < numFields(); i++) {
             boolean ifName = items[i].fieldName == null ? toCompare.getFieldName(i) == null : Objects.equals(toCompare.getFieldName(i), this.getFieldName(i));
