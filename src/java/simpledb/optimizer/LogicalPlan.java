@@ -1,4 +1,6 @@
 package simpledb.optimizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.Catalog;
 import simpledb.common.Database;
 import simpledb.ParsingException;
@@ -25,6 +27,8 @@ import java.io.File;
  * best implementations for joins.
  */
 public class LogicalPlan {
+
+    final static Logger logger = LoggerFactory.getLogger(LogicalPlan.class);
     private List<LogicalJoinNode> joins;
     private final List<LogicalScanNode> tables;
     private final List<LogicalFilterNode> filters;
@@ -325,7 +329,7 @@ public class LogicalPlan {
                 throw new ParsingException("Unknown field in filter expression " + lf.fieldQuantifiedName);
             }
             if (ftyp == Type.INT_TYPE)
-                f = new IntField(new Integer(lf.c));
+                f = new IntField(Integer.parseInt(lf.c));
             else
                 f = new StringField(lf.c, Type.STRING_LEN);
 
@@ -521,7 +525,7 @@ public class LogicalPlan {
         try {
             j = lp.physicalPlan(tid,tableMap, false);
         } catch (ParsingException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             System.exit(0);
         }
         // and run it
@@ -535,7 +539,7 @@ public class LogicalPlan {
             Database.getBufferPool().transactionComplete(tid);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
        
     }

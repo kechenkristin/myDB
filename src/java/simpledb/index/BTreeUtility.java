@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.Type;
 import simpledb.common.Utility;
@@ -19,6 +21,8 @@ import simpledb.transaction.TransactionId;
 
 /** Helper methods used for testing and implementing random features. */
 public class BTreeUtility {
+
+	final static Logger logger = LoggerFactory.getLogger(BTreeUtility.class);
 
 	public static final int MAX_RAND_VALUE = 1 << 16;
 
@@ -530,7 +534,7 @@ public class BTreeUtility {
 					success = true;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error(e.getMessage());
 				synchronized(elock) {
 					error = e;
 				}
@@ -613,7 +617,7 @@ public class BTreeUtility {
 				}
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error(e.getMessage());
 				synchronized(elock) {
 					error = e;
 				}
@@ -680,7 +684,7 @@ public class BTreeUtility {
 				}
 			} catch (Exception e) {
 				if(!(e instanceof TransactionAbortedException)) {
-					e.printStackTrace();
+					logger.error(e.getMessage());
 				}
 				synchronized(elock) {
 					error = e;
@@ -775,7 +779,7 @@ public class BTreeUtility {
 				}
 			} catch (Exception e) {
 				if(!(e instanceof TransactionAbortedException)) {
-					e.printStackTrace();
+					logger.error(e.getMessage());
 				}
 				synchronized(elock) {
 					error = e;

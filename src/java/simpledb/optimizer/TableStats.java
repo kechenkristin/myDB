@@ -1,5 +1,7 @@
 package simpledb.optimizer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Type;
@@ -22,6 +24,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class TableStats {
 
+    final static Logger logger = LoggerFactory.getLogger(TableStats.class);
+
     private static final ConcurrentMap<String, TableStats> statsMap = new ConcurrentHashMap<>();
 
     static final int IOCOSTPERPAGE = 1000;
@@ -41,7 +45,7 @@ public class TableStats {
             statsMapF.setAccessible(true);
             statsMapF.set(null, s);
         } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
     }
@@ -103,7 +107,7 @@ public class TableStats {
         try {
             constructHistogram();
         } catch (TransactionAbortedException | DbException e){
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 

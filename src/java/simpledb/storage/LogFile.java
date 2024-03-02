@@ -1,6 +1,8 @@
 
 package simpledb.storage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.transaction.TransactionId;
 import simpledb.common.Debug;
@@ -74,6 +76,8 @@ for each active transaction.
 </ul>
 */
 public class LogFile {
+
+    final static Logger logger = LoggerFactory.getLogger(LogFile.class);
 
     final File logFile;
     private RandomAccessFile raf;
@@ -281,7 +285,7 @@ public class LogFile {
 
             //            Debug.log("READ PAGE OF TYPE " + pageClassName + ", table = " + newPage.getId().getTableId() + ", page = " + newPage.getId().pageno());
         } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | InstantiationException e){
-            e.printStackTrace();
+            logger.error(e.getMessage());
             throw new IOException();
         }
         return newPage;
@@ -474,7 +478,7 @@ public class LogFile {
             raf.close();
         } catch (IOException e) {
             System.out.println("ERROR SHUTTING DOWN -- IGNORING.");
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -558,7 +562,7 @@ public class LogFile {
                 }
 
             } catch (EOFException e) {
-                //e.printStackTrace();
+                //logger.error(e.getMessage());
                 break;
             }
         }

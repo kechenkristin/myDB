@@ -340,7 +340,7 @@ public class TestUtil {
                     acquired = true;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
                 synchronized(elock) {
                     error = e;
                 }

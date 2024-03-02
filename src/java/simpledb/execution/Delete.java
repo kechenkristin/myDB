@@ -1,12 +1,11 @@
 package simpledb.execution;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Type;
-import simpledb.storage.BufferPool;
-import simpledb.storage.IntField;
-import simpledb.storage.Tuple;
-import simpledb.storage.TupleDesc;
+import simpledb.storage.*;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
@@ -17,6 +16,8 @@ import java.io.IOException;
  * them from the table they belong to.
  */
 public class Delete extends Operator {
+
+    final static Logger logger = LoggerFactory.getLogger(Delete.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -84,7 +85,7 @@ public class Delete extends Operator {
                 bufferPool.deleteTuple(tid, child.next());
                 deleteNums++;
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
         deleteTuple = new Tuple(tupleDesc);

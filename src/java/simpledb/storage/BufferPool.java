@@ -1,5 +1,7 @@
 package simpledb.storage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.Permissions;
 import simpledb.common.DbException;
@@ -26,6 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Threadsafe, all fields are final
  */
 public class BufferPool {
+
+    final static Logger logger = LoggerFactory.getLogger(BufferPool.class);
     /** Bytes per page, including header. */
     private static final int DEFAULT_PAGE_SIZE = 4096;
 
@@ -102,7 +106,7 @@ public class BufferPool {
                     break;
                 }
             } catch (InterruptedException e){
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
             long now = System.currentTimeMillis();
             if(now-start > timeout){
@@ -171,7 +175,7 @@ public class BufferPool {
             try {
                 flushPages(tid);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         } else {
             recoverPages(tid);

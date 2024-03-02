@@ -3,6 +3,8 @@ package simpledb.index;
 import java.io.*;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.Type;
 import simpledb.common.Utility;
@@ -20,6 +22,8 @@ import simpledb.transaction.TransactionId;
  */
 
 public class BTreeFileEncoder {
+
+	final static Logger logger = LoggerFactory.getLogger(BTreeFileEncoder.class);
 
 	/**
 	 * Encode the file using the BTreeFile's Insert method.
@@ -95,14 +99,14 @@ public class BTreeFileEncoder {
 			}
 			it.close();
 		} catch(TransactionAbortedException | IOException | DbException te){
-			te.printStackTrace();
+			logger.error(te.getMessage());
 			return bf;
 		}
 
         try {
 			Database.getBufferPool().flushAllPages();
 		} catch(Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 
 		return bf;

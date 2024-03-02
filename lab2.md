@@ -386,7 +386,7 @@ public class jointest {
             Database.getBufferPool().transactionComplete(tid);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
     }

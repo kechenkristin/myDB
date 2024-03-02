@@ -3,16 +3,15 @@ package simpledb.index;
 import java.util.*;
 import java.io.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.Catalog;
 import simpledb.common.Database;
 import simpledb.common.Type;
 import simpledb.execution.Predicate.Op;
 import simpledb.common.DbException;
 import simpledb.common.Debug;
-import simpledb.storage.BufferPool;
-import simpledb.storage.Field;
-import simpledb.storage.IntField;
-import simpledb.storage.RecordId;
+import simpledb.storage.*;
 
 import static simpledb.storage.HeapPage.getBytes;
 
@@ -25,6 +24,8 @@ import static simpledb.storage.HeapPage.getBytes;
  *
  */
 public class BTreeInternalPage extends BTreePage {
+
+	final static Logger logger = LoggerFactory.getLogger(BTreeInternalPage.class);
 	private final byte[] header;
 	private final Field[] keys;
 	private final int[] children;
@@ -82,7 +83,7 @@ public class BTreeInternalPage extends BTreePage {
 			Field f = Type.INT_TYPE.parse(dis);
 			this.parent = ((IntField) f).getValue();
 		} catch (java.text.ParseException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 
 		// read the child page category
@@ -102,7 +103,7 @@ public class BTreeInternalPage extends BTreePage {
 			for (int i=1; i<keys.length; i++)
 				keys[i] = readNextKey(dis,i);
 		}catch(NoSuchElementException e){
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 
 		children = new int[numSlots];
@@ -111,7 +112,7 @@ public class BTreeInternalPage extends BTreePage {
 			for (int i=0; i<children.length; i++)
 				children[i] = readNextChild(dis,i);
 		}catch(NoSuchElementException e){
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 		dis.close();
 
@@ -153,7 +154,7 @@ public class BTreeInternalPage extends BTreePage {
 			}
 			return new BTreeInternalPage(pid,oldDataRef,keyField);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			//should never happen -- we parsed it OK before!
 			System.exit(1);
 		}
@@ -189,7 +190,7 @@ public class BTreeInternalPage extends BTreePage {
 		try {
 			f = td.getFieldType(keyField).parse(dis);
 		} catch (java.text.ParseException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			throw new NoSuchElementException("parsing error!");
 		}
 
@@ -219,7 +220,7 @@ public class BTreeInternalPage extends BTreePage {
 			Field f = Type.INT_TYPE.parse(dis);
 			child = ((IntField) f).getValue();
 		} catch (java.text.ParseException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			throw new NoSuchElementException("parsing error!");
 		}
 
@@ -247,7 +248,7 @@ public class BTreeInternalPage extends BTreePage {
 			dos.writeInt(parent);
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 
 		// write out the child page category
@@ -255,7 +256,7 @@ public class BTreeInternalPage extends BTreePage {
 			dos.writeByte((byte) childCategory);
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 
 		// create the header of the page
@@ -264,7 +265,7 @@ public class BTreeInternalPage extends BTreePage {
                 dos.writeByte(b);
             } catch (IOException e) {
                 // this really shouldn't happen
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
 
@@ -279,7 +280,7 @@ public class BTreeInternalPage extends BTreePage {
 					try {
 						dos.writeByte(0);
 					} catch (IOException e) {
-						e.printStackTrace();
+						logger.error(e.getMessage());
 					}
 
 				}
@@ -290,7 +291,7 @@ public class BTreeInternalPage extends BTreePage {
 			try {
 				keys[i].serialize(dos);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error(e.getMessage());
 			}
 
 		}
@@ -304,7 +305,7 @@ public class BTreeInternalPage extends BTreePage {
 					try {
 						dos.writeByte(0);
 					} catch (IOException e) {
-						e.printStackTrace();
+						logger.error(e.getMessage());
 					}
 
 				}
@@ -316,7 +317,7 @@ public class BTreeInternalPage extends BTreePage {
 				dos.writeInt(children[i]);
 
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error(e.getMessage());
 			}
 		}
 

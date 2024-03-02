@@ -1,12 +1,11 @@
 package simpledb.execution;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.DbException;
-import simpledb.storage.BufferPool;
-import simpledb.storage.IntField;
+import simpledb.storage.*;
 import simpledb.common.Type;
-import simpledb.storage.Tuple;
-import simpledb.storage.TupleDesc;
 import simpledb.transaction.Transaction;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
@@ -17,6 +16,8 @@ import java.io.IOException;
  * constructor
  */
 public class Insert extends Operator {
+
+    final static Logger logger = LoggerFactory.getLogger(Insert.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -99,7 +100,7 @@ public class Insert extends Operator {
                 bufferPool.insertTuple(tid, tableId, child.next());
                 insertTuples++;
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
         insertTuple = new Tuple(this.tupleDesc);

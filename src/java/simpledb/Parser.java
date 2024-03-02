@@ -9,20 +9,21 @@ import java.util.*;
 import jline.ArgumentCompletor;
 import jline.ConsoleReader;
 import jline.SimpleCompletor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Type;
 import simpledb.execution.*;
 import simpledb.optimizer.LogicalPlan;
 import simpledb.optimizer.TableStats;
-import simpledb.storage.IntField;
-import simpledb.storage.StringField;
-import simpledb.storage.Tuple;
-import simpledb.storage.TupleDesc;
+import simpledb.storage.*;
 import simpledb.transaction.Transaction;
 import simpledb.transaction.TransactionId;
 
 public class Parser {
+
+    final static Logger logger = LoggerFactory.getLogger(Parser.class);
     static boolean explain = false;
 
     public static Predicate.Op getOp(String s) throws simpledb.ParsingException {
@@ -166,7 +167,7 @@ public class Parser {
 
                 // XXX handle subquery?
             } catch (NoSuchElementException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
                 throw new simpledb.ParsingException("Table "
                         + fromIt.getTable() + " is not in catalog");
             }
@@ -309,7 +310,7 @@ public class Parser {
                 m.invoke(c.newInstance(), physicalPlan,System.out);
             } catch (ClassNotFoundException | SecurityException ignored) {
             } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException | IllegalArgumentException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
 
@@ -358,7 +359,7 @@ public class Parser {
                                 + zc.getValue()
                                 + " is not an integer, expected a string.");
                     }
-                    IntField f = new IntField(new Integer(zc.getValue()));
+                    IntField f = new IntField(Integer.parseInt(zc.getValue()));
                     t.setField(i, f);
                 } else if (zc.getType() == ZConstant.STRING) {
                     if (td.getFieldType(i) != Type.STRING_TYPE) {
@@ -555,7 +556,7 @@ public class Parser {
             }
 
         } catch (IOException | DbException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         } catch (simpledb.ParsingException e) {
             System.out
                     .println("Invalid SQL expression: \n \t" + e.getMessage());
@@ -624,7 +625,7 @@ public class Parser {
                 try {
                     Thread.sleep(SLEEP_TIME);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
 
                 long startTime = System.currentTimeMillis();
@@ -637,7 +638,7 @@ public class Parser {
                 this.shutdown();
             } catch (FileNotFoundException e) {
                 System.out.println("Unable to find query file" + queryFile);
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         } else { // no query file, run interactive prompt
             ConsoleReader reader = new ConsoleReader();

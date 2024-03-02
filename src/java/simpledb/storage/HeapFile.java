@@ -1,5 +1,7 @@
 package simpledb.storage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Debug;
@@ -21,6 +23,8 @@ import java.util.*;
  * @see HeapPage#HeapPage
  */
 public class HeapFile implements DbFile {
+
+    final static Logger logger = LoggerFactory.getLogger(HeapFile.class);
 
     private File file;
     private TupleDesc tupleDesc;
@@ -85,12 +89,12 @@ public class HeapFile implements DbFile {
             randomAccessFile.read(data);
             page = new HeapPage(((HeapPageId) pid), data);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         } finally {
             try {
                 randomAccessFile.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
         return page;
