@@ -3,7 +3,6 @@ package simpledb.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import simpledb.storage.BufferPool;
-import simpledb.storage.HeapPage;
 import simpledb.storage.LogFile;
 
 import java.io.*;
@@ -63,7 +62,7 @@ public class Database {
      * return it
      */
     public static BufferPool resetBufferPool(int pages) {
-        java.lang.reflect.Field bufferPoolF=null;
+        java.lang.reflect.Field bufferPoolF;
         try {
             bufferPoolF = Database.class.getDeclaredField("_bufferpool");
             bufferPoolF.setAccessible(true);

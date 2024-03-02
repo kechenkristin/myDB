@@ -18,19 +18,18 @@ public class StringAggregator implements Aggregator {
     private static final long serialVersionUID = 1L;
     private final int gbfield;
     private final Type gbfieldtype;
-    Map<Field, Integer> aggResult;
+    private final Map<Field, Integer> aggResult;
 
 
     /**
      * Aggregate constructor
      * @param gbfield the 0-based index of the group-by field in the tuple, or NO_GROUPING if there is no grouping
      * @param gbfieldtype the type of the group by field (e.g., Type.INT_TYPE), or null if there is no grouping
-     * @param afield the 0-based index of the aggregate field in the tuple
      * @param what aggregation operator to use -- only supports COUNT
      * @throws IllegalArgumentException if what != COUNT
      */
 
-    public StringAggregator(int gbfield, Type gbfieldtype, int afield, Op what) {
+    public StringAggregator(int gbfield, Type gbfieldtype, Op what) {
         if(!what.equals(Op.COUNT)){
             throw new IllegalArgumentException("String类型只支持计数");
         }
@@ -48,8 +47,7 @@ public class StringAggregator implements Aggregator {
         // 聚合值 由于是字符串，这里是计数，没有任何使用
         if(aggResult.containsKey(gbFiled)){
             aggResult.put(gbFiled, aggResult.get(gbFiled) + 1);
-        }
-        else{
+        } else{
             aggResult.put(gbFiled, 1);
         }
     }
@@ -63,17 +61,13 @@ public class StringAggregator implements Aggregator {
      *   aggregate specified in the constructor.
      */
     public OpIterator iterator() {
-        Type[] types;
-        String[] names;
         TupleDesc tupleDesc;
         // 储存结果
         List<Tuple> tuples = new ArrayList<>();
         if(gbfield == NO_GROUPING){
-            types = new Type[]{Type.INT_TYPE};
-            names = new String[]{"aggregateVal"};
-            tupleDesc = new TupleDesc(types, names);
+            tupleDesc = new TupleDesc(new Type[]{Type.INT_TYPE}, new String[]{"aggregateVal"});
             Tuple tuple = new Tuple(tupleDesc);
-            tuple.setField(0, new IntField(aggResult.get(null)));
+            tuple.setField(0, new IntField(0));
             tuples.add(tuple);
         }else{
             tupleDesc = IntegerAggregator.getTupleDesc(aggResult, tuples, gbfieldtype);

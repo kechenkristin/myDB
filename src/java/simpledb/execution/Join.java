@@ -14,10 +14,10 @@ import java.util.*;
 public class Join extends Operator {
 
     private static final long serialVersionUID = 1L;
-    JoinPredicate joinPredicate;
-    OpIterator opIterator1;
-    OpIterator opIterator2;
-    Tuple tuple1;
+    private final JoinPredicate joinPredicate;
+    private OpIterator opIterator1;
+    private OpIterator opIterator2;
+    private Tuple tuple1;
 
     /**
      * Constructor. Accepts two children to join and the predicate to join them

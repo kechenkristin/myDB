@@ -41,12 +41,12 @@ public class HeapPageWriteTest extends SimpleDbTestBase {
         HeapPage page = new HeapPage(pid, HeapPageReadTest.EXAMPLE_DATA);
         page.markDirty(true, tid);
         TransactionId dirtier = page.isDirty();
-        assertTrue(dirtier != null);
-        assertTrue(dirtier == tid);
+        assertNotNull(dirtier);
+        assertSame(dirtier, tid);
 
         page.markDirty(false, tid);
         dirtier = page.isDirty();
-        assertFalse(dirtier != null);
+        assertNull(dirtier);
     }
 
     /**
@@ -115,7 +115,7 @@ public class HeapPageWriteTest extends SimpleDbTestBase {
 
         // now, delete them one-by-one from both the front and the end.
         int deleted = 0;
-        while (tuples.size() > 0) {
+        while (!tuples.isEmpty()) {
             page.deleteTuple(tuples.removeFirst());
             page.deleteTuple(tuples.removeLast());
             deleted += 2;

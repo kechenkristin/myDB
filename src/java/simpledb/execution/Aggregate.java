@@ -70,7 +70,7 @@ public class Aggregate extends Operator {
     private Aggregator constructAggregator() {
         return ( getAGGFieldType() == Type.INT_TYPE) ?
                 new IntegerAggregator(gfield, gbFieldType, afield, op) :
-                new StringAggregator(gfield, gbFieldType, afield, op);
+                new StringAggregator(gfield, gbFieldType, op);
     }
 
     private TupleDesc constructAggTD() {

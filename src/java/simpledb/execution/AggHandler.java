@@ -60,8 +60,7 @@ class SumHandler extends AggHandler{
 class MaxHandler extends AggHandler{
     @Override
     void handle(Field gbField, IntField aggField) {
-        int value = aggField.getValue();
-        updateAggResult(aggResult, gbField, Math.max(aggResult.getOrDefault(gbField, Integer.MIN_VALUE), value));
+        updateAggResult(aggResult, gbField, Math.max(aggResult.getOrDefault(gbField, Integer.MIN_VALUE), aggField.getValue()));
     }
 
     @Override
@@ -73,8 +72,7 @@ class MaxHandler extends AggHandler{
 class MinHandler extends AggHandler{
     @Override
     void handle(Field gbField, IntField aggField) {
-        int value = aggField.getValue();
-        updateAggResult(aggResult, gbField, Math.min(aggResult.getOrDefault(gbField, Integer.MAX_VALUE), value));
+        updateAggResult(aggResult, gbField, Math.min(aggResult.getOrDefault(gbField, Integer.MAX_VALUE), aggField.getValue()));
     }
 
     @Override

@@ -1,5 +1,7 @@
 package simpledb;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simpledb.common.*;
 import simpledb.execution.OpIterator;
 import simpledb.storage.*;
@@ -12,6 +14,8 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 public class TestUtil {
+
+    final static Logger logger = LoggerFactory.getLogger(TestUtil.class);
     /**
      * @return an IntField with value n
      */

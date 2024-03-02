@@ -6,7 +6,6 @@ import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.storage.*;
 import simpledb.common.Type;
-import simpledb.transaction.Transaction;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
@@ -23,55 +22,38 @@ public class Insert extends Operator {
 
     /**
      * Constructor.
-     *
-     * @param t
-     *            The transaction running the insert.
-     * @param child
-     *            The child operator from which to read tuples to be inserted.
-     * @param tableId
-     *            The table in which to insert tuples.
-     * @throws DbException
-     *             if TupleDesc of child differs from table into which we are to
-     *             insert.
      */
 
-    private TransactionId tid;
+    private final TransactionId tid;
     private OpIterator child;
-    private int tableId;
-    private TupleDesc tupleDesc;
+    private final int tableId;
+    private final TupleDesc tupleDesc;
     private Tuple insertTuple;
 
     public Insert(TransactionId t, OpIterator child, int tableId)
             throws DbException {
-        // some code goes here
-        this.tid = t;
+        tid = t;
         this.child = child;
         this.tableId = tableId;
-        this.tupleDesc = new TupleDesc(new Type[] {Type.INT_TYPE}, new String[] {"insertNums"});
-        // String[] demo = new String[]{child.getTupleDesc().getFieldName(0)};
-        // this.tupleDesc = new TupleDesc(new Type[] {Type.INT_TYPE}, demo);
-        this.insertTuple = null;
+        tupleDesc = new TupleDesc(new Type[] {Type.INT_TYPE}, new String[] {"insertNums"});
+        insertTuple = null;
     }
 
     public TupleDesc getTupleDesc() {
-        // some code goes here
         return tupleDesc;
     }
 
     public void open() throws DbException, TransactionAbortedException {
-        // some code goes here
         super.open();
         child.open();
     }
 
     public void close() {
-        // some code goes here
         super.close();
         child.close();
     }
 
     public void rewind() throws DbException, TransactionAbortedException {
-        // some code goes here
         child.rewind();
     }
 
@@ -89,7 +71,6 @@ public class Insert extends Operator {
      * @see BufferPool#insertTuple
      */
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
-        // some code goes here
         if (insertTuple != null) {
             return null;
         }

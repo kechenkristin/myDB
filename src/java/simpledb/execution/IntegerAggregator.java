@@ -40,7 +40,6 @@ public class IntegerAggregator implements Aggregator {
         gbFieldType = gbfieldtype;
         aField = afield;
 
-        /*
         switch (what) {
             case MIN -> aggHandler = new MinHandler();
             case MAX -> aggHandler = new MaxHandler();
@@ -48,27 +47,6 @@ public class IntegerAggregator implements Aggregator {
             case SUM -> aggHandler = new SumHandler();
             case COUNT -> aggHandler = new CountHandler();
             default -> throw new IllegalArgumentException("Aggregator doesn't support this operator!");
-        }
-         */
-
-        switch (what) {
-            case MIN:
-                aggHandler = new MinHandler();
-                break;
-            case MAX:
-                aggHandler = new MaxHandler();
-                break;
-            case AVG:
-                aggHandler = new AvgHandler();
-                break;
-            case SUM:
-                aggHandler = new SumHandler();
-                break;
-            case COUNT:
-                aggHandler = new CountHandler();
-                break;
-            default:
-                throw new IllegalArgumentException("Aggregator doesn't support this operator!");
         }
     }
 
@@ -96,16 +74,12 @@ public class IntegerAggregator implements Aggregator {
     public OpIterator iterator() {
         Map<Field, Integer> aggResult = aggHandler.getAggResult();
         // 构建 tuple 需要
-        Type[] types;
-        String[] names;
         TupleDesc tupleDesc;
         // 储存结果
         List<Tuple> tuples = new ArrayList<>();
         // 如果没有分组
         if(gbField == NO_GROUPING){
-            types = new Type[]{Type.INT_TYPE};
-            names = new String[]{"aggregateVal"};
-            tupleDesc = new TupleDesc(types, names);
+            tupleDesc = new TupleDesc(new Type[]{Type.INT_TYPE}, new String[]{"aggregateVal"});
             // 获取结果字段
             IntField resultField = new IntField(aggResult.get(null));
             // 组合成行（临时行，不需要存储，只需要设置字段值）
@@ -120,12 +94,7 @@ public class IntegerAggregator implements Aggregator {
     }
 
     static TupleDesc getTupleDesc(Map<Field, Integer> aggResult, List<Tuple> tuples, Type gbFieldType) {
-        Type[] types;
-        String[] names;
-        TupleDesc tupleDesc;
-        types = new Type[]{gbFieldType, Type.INT_TYPE};
-        names = new String[]{"groupVal", "aggregateVal"};
-        tupleDesc = new TupleDesc(types, names);
+        TupleDesc tupleDesc = new TupleDesc(new Type[]{gbFieldType, Type.INT_TYPE}, new String[]{"groupVal", "aggregateVal"});
         for(Field field: aggResult.keySet()){
             Tuple tuple = new Tuple(tupleDesc);
             if(gbFieldType == Type.INT_TYPE){

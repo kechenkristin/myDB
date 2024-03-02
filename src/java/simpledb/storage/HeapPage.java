@@ -325,14 +325,16 @@ public class HeapPage implements Page {
         return empty;
     }
 
+    private int[] getZipData(int i) {
+        // loc, offset, tmp
+        return new int[]{i / 8, i % 8, 1 << i % 8};
+    }
+
     /**
      * Returns true if associated slot on this page is filled.
      */
     public boolean isSlotUsed(int i) {
-        int loc = i / 8;
-        int offset = i % 8;
-        int tmp = 1 << offset;
-        return (header[loc] & tmp) != 0;
+        return (header[getZipData(i)[0]] & getZipData(i)[2]) != 0;
     }
 
     /**
@@ -352,12 +354,7 @@ public class HeapPage implements Page {
         int loc = i/8;
         int offset = i%8;
         int tmp = 1<<offset;
-        if(value){
-            header[loc] = (byte) (header[loc] | tmp);
-        }
-        else {
-            header[loc] = (byte) (header[loc] & (~tmp));
-        }
+        header[loc] = (byte) (value ? (header[loc] | tmp) : (header[loc] & (~tmp)));
     }
 
     /**

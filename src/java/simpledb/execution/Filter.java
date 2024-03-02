@@ -13,8 +13,8 @@ import java.util.*;
 public class Filter extends Operator {
 
     private static final long serialVersionUID = 1L;
-    Predicate predicate;
-    OpIterator opIterator;
+    private final Predicate predicate;
+    private OpIterator opIterator;
 
     /**
      * Constructor accepts a predicate to apply and a child operator to read
@@ -73,7 +73,7 @@ public class Filter extends Operator {
 
     @Override
     public OpIterator[] getChildren() {
-        return new OpIterator[] {this.opIterator};
+        return new OpIterator[] {opIterator};
     }
 
     @Override

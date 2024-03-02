@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.DbException;
-import simpledb.common.Debug;
 import simpledb.common.Permissions;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
@@ -26,9 +25,9 @@ public class HeapFile implements DbFile {
 
     final static Logger logger = LoggerFactory.getLogger(HeapFile.class);
 
-    private File file;
-    private TupleDesc tupleDesc;
-    private BufferPool bufferPool;
+    private final File file;
+    private final TupleDesc tupleDesc;
+    private final BufferPool bufferPool = Database.getBufferPool();
 
     /**
      * Constructs a heap file backed by the specified file.
@@ -39,7 +38,6 @@ public class HeapFile implements DbFile {
     public HeapFile(File f, TupleDesc td) {
         file = f;
         tupleDesc = td;
-        bufferPool = Database.getBufferPool();
     }
 
     /**
@@ -53,10 +51,10 @@ public class HeapFile implements DbFile {
 
     /**
      * Returns an ID uniquely identifying this HeapFile. Implementation note:
-     * you will need to generate this tableid somewhere to ensure that each
+     * you will need to generate this tableId somewhere to ensure that each
      * HeapFile has a "unique id," and that you always return the same value for
      * a particular HeapFile. We suggest hashing the absolute file name of the
-     * file underlying the heapfile, i.e. f.getAbsoluteFile().hashCode().
+     * file underlying the heapFile, i.e. f.getAbsoluteFile().hashCode().
      *
      * @return an ID uniquely identifying this HeapFile.
      */
@@ -92,6 +90,7 @@ public class HeapFile implements DbFile {
             logger.error(e.getMessage());
         } finally {
             try {
+                assert randomAccessFile != null;
                 randomAccessFile.close();
             } catch (IOException e) {
                 logger.error(e.getMessage());
@@ -142,7 +141,7 @@ public class HeapFile implements DbFile {
         // add data at the end of the file
         outputStream.write(emptyPageData);
         outputStream.close();
-        // load the page into cache, attention, the numpage()-1 is used because now a new page is created.
+        // load the page into cache, attention, the numPage()-1 is used because now a new page is created.
         HeapPage page = (HeapPage) bufferPool.getPage(tid, new HeapPageId(getId(), numPages() - 1), Permissions.READ_WRITE);
         page.insertTuple(t);
         modified.add(page);
@@ -159,14 +158,14 @@ public class HeapFile implements DbFile {
         return modified;
     }
 
-    private class HeapFileIterator implements DbFileIterator {
+    private class HeapFileIterator implements DbFileIterator, Serializable {
 
         private static final long serialVersionUID = 1L;
 
         private int curPage = 0;
         private Iterator<Tuple> curItr = null;
-        private TransactionId tid;
-        private boolean open = false;;
+        private final TransactionId tid;
+        private boolean open = false;
 
         public HeapFileIterator(TransactionId tid) {
             this.tid = tid;
@@ -199,12 +198,8 @@ public class HeapFile implements DbFile {
         }
 
         @Override
-        public boolean hasNext() throws DbException,
-                TransactionAbortedException {
-            if (!open) {
-                return false;
-            }
-            return curPage < numPages();
+        public boolean hasNext() {
+            return open && curPage < numPages();
         }
 
         @Override

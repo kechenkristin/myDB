@@ -1,8 +1,6 @@
 package simpledb.execution;
 
-import simpledb.storage.Field;
 import simpledb.storage.Tuple;
-
 import java.io.Serializable;
 
 /**
@@ -12,8 +10,8 @@ import java.io.Serializable;
 public class JoinPredicate implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    int field1;
-    int field2;
+    private final int field1;
+    private final int field2;
     Predicate.Op op;
 
     /**

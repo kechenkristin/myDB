@@ -47,9 +47,9 @@ public class Predicate implements Serializable {
 
     }
 
-    int field;
-    Op op;
-    Field operand;
+    private final int field;
+    private final Op op;
+    private final Field operand;
     
     /**
      * Constructor.
@@ -108,7 +108,6 @@ public class Predicate implements Serializable {
      * operand_string"
      */
     public String toString() {
-        String str = String.format("field = %s, op = %s, operand = %s", field, op, operand);
-        return str;
+        return String.format("field = %s, op = %s, operand = %s", field, op, operand);
     }
 }
