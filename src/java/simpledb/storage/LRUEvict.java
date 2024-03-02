@@ -9,8 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 // in order to give a LRU strategy in Evict the page
 // this kind of algorithm is also used in Operating System.
 public class LRUEvict {
-    private DLinkedNode head, tail;
-    private Map<PageId, DLinkedNode> map;
+    private final DLinkedNode head;
+    private final DLinkedNode tail;
+    private final Map<PageId, DLinkedNode> map;
 
     public LRUEvict(int numPages) {
         head = new DLinkedNode();

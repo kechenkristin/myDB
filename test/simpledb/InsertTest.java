@@ -6,6 +6,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import junit.framework.JUnit4TestAdapter;
+import simpledb.common.Type;
 import simpledb.common.Utility;
 import simpledb.execution.Insert;
 import simpledb.execution.OpIterator;
@@ -42,7 +43,7 @@ public class InsertTest extends TestUtil.CreateHeapFile {
    */
   @Test public void getTupleDesc() throws Exception {
     Insert op = new Insert(tid,scan1, empty.getId());
-    TupleDesc expected = Utility.getTupleDesc(1);
+    TupleDesc expected = new TupleDesc(new Type[]{Type.INT_TYPE}, new String[]{"insertNums"});
     TupleDesc actual = op.getTupleDesc();
     assertEquals(expected, actual);
   }

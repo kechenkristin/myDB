@@ -7,10 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import simpledb.common.DbException;
-import simpledb.execution.Delete;
-import simpledb.execution.Filter;
-import simpledb.execution.Predicate;
-import simpledb.execution.SeqScan;
+import simpledb.execution.*;
 import simpledb.storage.HeapFile;
 import simpledb.storage.IntField;
 import simpledb.storage.Tuple;
@@ -26,9 +23,9 @@ public class DeleteTest extends FilterBase {
         SeqScan ss = new SeqScan(tid, table.getId(), "");
         Filter filter = new Filter(predicate, ss);
         Delete deleteOperator = new Delete(tid, filter);
-//        Query q = new Query(deleteOperator, tid);
+        Query q = new Query(deleteOperator, tid);
 
-//        q.start();
+        q.start();
         deleteOperator.open();
         boolean hasResult = false;
         int result = -1;

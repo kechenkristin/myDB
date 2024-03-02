@@ -59,7 +59,7 @@ public class OperatorCardinality {
             Map<String, TableStats> tableStats) {
         OpIterator child = f.getChildren()[0];
         Predicate pred = f.getPredicate();
-        String[] tmp = child.getTupleDesc().getFieldName(pred.getField())
+        String[] tmp = child.getTupleDesc().getFieldName(pred.field())
                 .split("[.]");
         String tableAlias = tmp[0];
         String pureFieldName = tmp[1];
@@ -71,7 +71,7 @@ public class OperatorCardinality {
                     .estimateSelectivity(
                             Database.getCatalog().getTupleDesc(tableId)
                                     .fieldNameToIndex(pureFieldName),
-                            pred.getOp(), pred.getOperand());
+                            pred.op(), pred.operand());
             if (child instanceof Operator) {
                 Operator oChild = (Operator) child;
                 boolean hasJoinPK = updateOperatorCardinality(oChild,

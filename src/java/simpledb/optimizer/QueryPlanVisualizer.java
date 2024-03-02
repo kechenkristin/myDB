@@ -7,7 +7,6 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import simpledb.execution.*;
-import simpledb.storage.HeapPage;
 import simpledb.storage.TupleDesc;
 import simpledb.storage.TupleDesc.TDItem;
 
@@ -207,9 +206,9 @@ public class QueryPlanVisualizer {
                 Filter f = (Filter) plan;
                 Predicate p = f.getPredicate();
                 thisNode.text = String.format("%1$s(%2$s),card:%3$d", SELECT, children[0]
-                        .getTupleDesc().getFieldName(p.getField())
-                        + p.getOp()
-                        + p.getOperand(),f.getEstimatedCardinality());
+                        .getTupleDesc().getFieldName(p.field())
+                        + p.op()
+                        + p.operand(),f.getEstimatedCardinality());
                 int upBarShift = parentUpperBarStartShift;
                 if (SELECT.length() / 2 > parentUpperBarStartShift)
                     upBarShift = SELECT.length() / 2;

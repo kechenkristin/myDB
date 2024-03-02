@@ -9,6 +9,7 @@ import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -135,7 +136,7 @@ public class TestUtil {
             DbException, TransactionAbortedException {
         // TODO(ghuo): this n^2 set comparison is kind of dumb, but we haven't
         // implemented hashCode or equals for tuples.
-        boolean matched = false;
+        boolean matched;
         while (expected.hasNext()) {
             Tuple expectedTup = expected.next();
             matched = false;
@@ -177,11 +178,11 @@ public class TestUtil {
      */
     public static byte[] readFileBytes(String path) throws IOException {
         File f = new File(path);
-        InputStream is = new FileInputStream(f);
+        InputStream is = Files.newInputStream(f.toPath());
         byte[] buf = new byte[(int) f.length()];
 
         int offset = 0;
-        int count = 0;
+        int count;
         while (offset < buf.length
                && (count = is.read(buf, offset, buf.length - offset)) >= 0) {
             offset += count;
@@ -309,8 +310,6 @@ public class TestUtil {
      * Helper class that attempts to acquire a lock on a given page in a new
      * thread.
      *
-     * @return a handle to the Thread that will attempt lock acquisition after it
-     *   has been started
      */
     static class LockGrabber extends Thread {
 

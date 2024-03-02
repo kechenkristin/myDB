@@ -24,8 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * The BufferPool is also responsible for locking;  when a transaction fetches
  * a page, BufferPool checks that the transaction has the appropriate
  * locks to read/write the page.
- *
- * @Threadsafe, all fields are final
  */
 public class BufferPool {
 
@@ -201,7 +199,6 @@ public class BufferPool {
      * acquire a write lock on the page the tuple is added to and any other
      * pages that are updated (Lock acquisition is not needed for lab2).
      * May block if the lock(s) cannot be acquired.
-     *
      * Marks any pages that were dirtied by the operation as dirty by calling
      * their markDirty bit, and adds versions of any pages that have
      * been dirtied to the cache (replacing any existing versions of those pages) so
@@ -223,7 +220,6 @@ public class BufferPool {
      * Remove the specified tuple from the buffer pool.
      * Will acquire a write lock on the page the tuple is removed from and any
      * other pages that are updated. May block if the lock(s) cannot be acquired.
-     *
      * Marks any pages that were dirtied by the operation as dirty by calling
      * their markDirty bit, and adds versions of any pages that have
      * been dirtied to the cache (replacing any existing versions of those pages) so
@@ -326,8 +322,8 @@ public class BufferPool {
     private synchronized  void evictPage() throws DbException {
         // some code goes here
         // not necessary for lab1
-        PageId evictPageId = null;
-        Page page = null;
+        PageId evictPageId;
+        Page page;
         boolean isAllDirty = true;
         for (int i = 0; i < pageCache.size(); i++) {
             evictPageId = evict.getEvictPageId();

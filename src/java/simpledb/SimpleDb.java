@@ -9,6 +9,7 @@ import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
 import java.io.*;
+import java.util.Arrays;
 
 public class SimpleDb {
 
@@ -17,7 +18,7 @@ public class SimpleDb {
             throws DbException, TransactionAbortedException {
         // convert a file
         switch (args[0]) {
-            case "convert":
+            case "convert" -> {
                 try {
                     if (args.length < 3 || args.length > 5) {
                         System.err.println("Unexpected number of arguments to convert ");
@@ -30,8 +31,7 @@ public class SimpleDb {
                     char fieldSeparator = ',';
 
                     if (args.length == 3)
-                        for (int i = 0; i < numOfAttributes; i++)
-                            ts[i] = Type.INT_TYPE;
+                        Arrays.fill(ts, Type.INT_TYPE);
                     else {
                         String typeString = args[3];
                         String[] typeStringAr = typeString.split(",");
@@ -60,14 +60,13 @@ public class SimpleDb {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                break;
-            case "print":
+            }
+            case "print" -> {
                 File tableFile = new File(args[1]);
                 int columns = Integer.parseInt(args[2]);
                 DbFile table = Utility.openHeapFile(columns, tableFile);
                 TransactionId tid = new TransactionId();
                 DbFileIterator it = table.iterator(tid);
-
                 if (null == it) {
                     System.out.println("Error: method HeapFile.iterator(TransactionId tid) not yet implemented!");
                 } else {
@@ -78,12 +77,11 @@ public class SimpleDb {
                     }
                     it.close();
                 }
-                break;
-            case "parser":
+            }
+            case "parser" -> {
                 // Strip the first argument and call the parser
                 String[] newargs = new String[args.length - 1];
                 System.arraycopy(args, 1, newargs, 0, args.length - 1);
-
                 try {
                     //dynamically load Parser -- if it doesn't exist, print error message
                     Class<?> c = Class.forName("simpledb.Parser");
@@ -97,11 +95,11 @@ public class SimpleDb {
                     System.out.println("Error in parser.");
                     logger.error(e.getMessage());
                 }
-
-                break;
-            default:
+            }
+            default -> {
                 System.err.println("Unknown command: " + args[0]);
                 System.exit(1);
+            }
         }
     }
 

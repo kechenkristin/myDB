@@ -1,6 +1,5 @@
 package simpledb.storage;
 
-// new class, used in LRUEvict class
 public class DLinkedNode {
     PageId value;
     DLinkedNode prev;

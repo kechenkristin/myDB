@@ -38,13 +38,14 @@ public class Delete extends Operator {
         // some code goes here
         this.tid = t;
         this.child = child;
-        this.tupleDesc = new TupleDesc(new Type[] {Type.INT_TYPE}, new String[] {"deleteNums"});
+        // this.tupleDesc = new TupleDesc(new Type[] {Type.INT_TYPE}, new String[] {"deleteNums"});
+        this.tupleDesc = new TupleDesc(new Type[] {Type.INT_TYPE}, null);
         this.deleteTuple = null;
     }
 
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return this.tupleDesc;
+        return tupleDesc;
     }
 
     public void open() throws DbException, TransactionAbortedException {

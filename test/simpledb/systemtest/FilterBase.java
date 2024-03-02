@@ -33,7 +33,7 @@ public abstract class FilterBase extends SimpleDbTestBase {
     protected List<List<Integer>> createdTuples;
 
     private int runTransactionForPredicate(HeapFile table, Predicate predicate)
-            throws IOException, DbException, TransactionAbortedException {
+            throws DbException, TransactionAbortedException {
         TransactionId tid = new TransactionId();
         int result = applyPredicate(table, tid, predicate);
         Database.getBufferPool().transactionComplete(tid);
