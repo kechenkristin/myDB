@@ -3,14 +3,21 @@ package simpledb.execution;
 import simpledb.storage.Field;
 import simpledb.storage.Tuple;
 
+import java.io.Serial;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Predicate compares tuples to a specified Field value.
  */
-public record Predicate(int field, simpledb.execution.Predicate.Op op, Field operand) implements Serializable {
+public final class Predicate implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
+    private final int field;
+    private final Op op;
+    private final Field operand;
+
 
     /**
      * Constants used for return codes in Field.compare
@@ -55,13 +62,15 @@ public record Predicate(int field, simpledb.execution.Predicate.Op op, Field ope
      * @param op      operation to use for comparison
      * @param operand field value to compare passed in tuples to
      */
-    public Predicate {
+    public Predicate(int field, Op op, Field operand) {
+        this.field = field;
+        this.op = op;
+        this.operand = operand;
     }
 
     /**
      * @return the field number
      */
-    @Override
     public int field() {
         return field;
     }
@@ -69,7 +78,6 @@ public record Predicate(int field, simpledb.execution.Predicate.Op op, Field ope
     /**
      * @return the operator
      */
-    @Override
     public Op op() {
         return op;
     }
@@ -77,7 +85,6 @@ public record Predicate(int field, simpledb.execution.Predicate.Op op, Field ope
     /**
      * @return the operand
      */
-    @Override
     public Field operand() {
         return operand;
     }
@@ -102,4 +109,20 @@ public record Predicate(int field, simpledb.execution.Predicate.Op op, Field ope
     public String toString() {
         return String.format("field = %s, op = %s, operand = %s", field, op, operand);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (Predicate) obj;
+        return this.field == that.field &&
+                Objects.equals(this.op, that.op) &&
+                Objects.equals(this.operand, that.operand);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(field, op, operand);
+    }
+
 }

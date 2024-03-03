@@ -53,11 +53,10 @@ public class Parser {
             throws simpledb.ParsingException, IOException, ParseException {
         if (wx.getOperator().equals("AND")) {
             for (int i = 0; i < wx.nbOperands(); i++) {
-                if (!(wx.getOperand(i) instanceof ZExpression)) {
+                if (!(wx.getOperand(i) instanceof ZExpression newWx)) {
                     throw new simpledb.ParsingException(
                             "Nested queries are currently unsupported.");
                 }
-                ZExpression newWx = (ZExpression) wx.getOperand(i);
                 processExpression(tid, newWx, lp);
 
             }
@@ -73,7 +72,7 @@ public class Parser {
                         "Only simple binary expresssions of the form A op B are currently supported.");
             }
 
-            boolean isJoin = false;
+            boolean isJoin;
             Predicate.Op op = getOp(wx.getOperator());
 
             boolean op1const = ops.get(0) instanceof ZConstant; // otherwise
@@ -97,7 +96,7 @@ public class Parser {
 
             if (isJoin) { // join node
 
-                String tab1field = "", tab2field = "";
+                String tab1field = "", tab2field;
 
                 if (!op1const) { // left op is a nested query
                     // generate a virtual table for the left op
@@ -145,17 +144,16 @@ public class Parser {
         LogicalPlan lp = new LogicalPlan();
         lp.setQuery(q.toString());
         // walk through tables in the FROM clause
-        for (int i = 0; i < from.size(); i++) {
-            ZFromItem fromIt = from.get(i);
+        for (ZFromItem fromIt : from) {
             try {
 
                 int id = Database.getCatalog().getTableId(fromIt.getTable()); // will
-                                                                              // fall
-                                                                              // through
-                                                                              // if
-                                                                              // table
-                                                                              // doesn't
-                                                                              // exist
+                // fall
+                // through
+                // if
+                // table
+                // doesn't
+                // exist
                 String name;
 
                 if (fromIt.getAlias() != null)
@@ -168,7 +166,7 @@ public class Parser {
                 // XXX handle subquery?
             } catch (NoSuchElementException e) {
                 logger.error(e.getMessage());
-                throw new simpledb.ParsingException("Table "
+                throw new ParsingException("Table "
                         + fromIt.getTable() + " is not in catalog");
             }
         }
@@ -177,11 +175,10 @@ public class Parser {
         ZExp w = q.getWhere();
         if (w != null) {
 
-            if (!(w instanceof ZExpression)) {
+            if (!(w instanceof ZExpression wx)) {
                 throw new simpledb.ParsingException(
                         "Nested queries are currently unsupported.");
             }
-            ZExpression wx = (ZExpression) w;
             processExpression(tid, wx, lp);
 
         }
@@ -216,16 +213,15 @@ public class Parser {
         String aggField = null;
         String aggFun = null;
 
-        for (int i = 0; i < selectList.size(); i++) {
-            ZSelectItem si = selectList.get(i);
+        for (ZSelectItem si : selectList) {
             if (si.getAggregate() == null
                     && (si.isExpression() && !(si.getExpression() instanceof ZConstant))) {
-                throw new simpledb.ParsingException(
+                throw new ParsingException(
                         "Expressions in SELECT list are not supported.");
             }
             if (si.getAggregate() != null) {
                 if (aggField != null) {
-                    throw new simpledb.ParsingException(
+                    throw new ParsingException(
                             "Aggregates over multiple fields not supported.");
                 }
                 aggField = ((ZConstant) ((ZExpression) si.getExpression())
@@ -237,9 +233,9 @@ public class Parser {
             } else {
                 if (groupByField != null
                         && !(groupByField.equals(si.getTable() + "."
-                                + si.getColumn()) || groupByField.equals(si
-                                .getColumn()))) {
-                    throw new simpledb.ParsingException("Non-aggregate field "
+                        + si.getColumn()) || groupByField.equals(si
+                        .getColumn()))) {
+                    throw new ParsingException("Non-aggregate field "
                             + si.getColumn()
                             + " does not appear in GROUP BY list.");
                 }
@@ -264,11 +260,10 @@ public class Parser {
                         "Multi-attribute ORDER BY is not supported.");
             }
             ZOrderBy oby = obys.get(0);
-            if (!(oby.getExpression() instanceof ZConstant)) {
+            if (!(oby.getExpression() instanceof ZConstant f)) {
                 throw new simpledb.ParsingException(
                         "Complex ORDER BY's are not supported");
             }
-            ZConstant f = (ZConstant) oby.getExpression();
 
             lp.addOrderBy(f.getValue(), oby.getAscOrder());
 
@@ -349,10 +344,9 @@ public class Parser {
             }
             for (ZExp e : values) {
 
-                if (!(e instanceof ZConstant))
+                if (!(e instanceof ZConstant zc))
                     throw new simpledb.ParsingException(
                             "Complex expressions not allowed in INSERT statements.");
-                ZConstant zc = (ZConstant) e;
                 if (zc.getType() == ZConstant.NUMBER) {
                     if (td.getFieldType(i) != Type.INT_TYPE) {
                         throw new simpledb.ParsingException("Value "
@@ -428,7 +422,7 @@ public class Parser {
             throws IOException,
             simpledb.ParsingException {
         switch (s.getStmtType()) {
-            case "COMMIT":
+            case "COMMIT" -> {
                 if (curtrans == null)
                     throw new ParsingException(
                             "No transaction is currently running");
@@ -437,8 +431,8 @@ public class Parser {
                 inUserTrans = false;
                 System.out.println("Transaction " + curtrans.getId().getId()
                         + " committed.");
-                break;
-            case "ROLLBACK":
+            }
+            case "ROLLBACK" -> {
                 if (curtrans == null)
                     throw new ParsingException(
                             "No transaction is currently running");
@@ -447,9 +441,8 @@ public class Parser {
                 inUserTrans = false;
                 System.out.println("Transaction " + curtrans.getId().getId()
                         + " aborted.");
-
-                break;
-            case "SET TRANSACTION":
+            }
+            case "SET TRANSACTION" -> {
                 if (curtrans != null)
                     throw new ParsingException(
                             "Can't start new transactions until current transaction has been committed or rolledback.");
@@ -458,9 +451,8 @@ public class Parser {
                 inUserTrans = true;
                 System.out.println("Started a new transaction tid = "
                         + curtrans.getId().getId());
-                break;
-            default:
-                throw new ParsingException("Unsupported operation");
+            }
+            default -> throw new ParsingException("Unsupported operation");
         }
     }
 
@@ -680,7 +672,7 @@ public class Parser {
                     line = line.substring(split + 1);
                     buffer = new StringBuilder();
                 }
-                if (line.length() > 0) {
+                if (!line.isEmpty()) {
                     buffer.append(line);
                     buffer.append("\n");
                 }
@@ -693,6 +685,7 @@ class TupleArrayIterator implements OpIterator {
     /**
 	 *
 	 */
+    @Serial
     private static final long serialVersionUID = 1L;
     final List<Tuple> tups;
     Iterator<Tuple> it = null;

@@ -3,7 +3,6 @@ package simpledb.optimizer;
 import simpledb.common.Database;
 import simpledb.ParsingException;
 import simpledb.execution.*;
-import simpledb.storage.TupleDesc;
 
 import java.util.*;
 
@@ -50,7 +49,7 @@ public class JoinOptimizer {
     public static OpIterator instantiateJoin(LogicalJoinNode lj,
                                              OpIterator plan1, OpIterator plan2) throws ParsingException {
 
-        int t1id = 0, t2id = 0;
+        int t1id, t2id;
         OpIterator j;
 
         try {
@@ -74,7 +73,6 @@ public class JoinOptimizer {
         JoinPredicate p = new JoinPredicate(t1id, lj.p, t2id);
 
         if (lj.p == Predicate.Op.EQUALS) {
-
             try {
                 // dynamically load HashEquiJoin -- if it doesn't exist, just
                 // fall back on regular join
@@ -95,7 +93,7 @@ public class JoinOptimizer {
 
     /**
      * Estimate the cost of a join.
-     * 
+     * <p>
      * The cost of the join should be calculated based on the join algorithm (or
      * algorithms) that you implemented for Lab 2. It should be a function of
      * the amount of data that must be read over the course of the query, as
@@ -130,8 +128,7 @@ public class JoinOptimizer {
             // HINT: You may need to use the variable "j" if you implemented
             // a join algorithm that's more complicated than a basic
             // nested-loops join.
-            double cost = cost1 + card1 * cost2 + card1 * card2;
-            return cost;
+            return cost1 + card1 * cost2 + card1 * card2;
         }
     }
 
@@ -175,26 +172,48 @@ public class JoinOptimizer {
                                                    String field2PureName, int card1, int card2, boolean t1pkey,
                                                    boolean t2pkey, Map<String, TableStats> stats,
                                                    Map<String, Integer> tableAliasToId) {
-        int card = 1;
-
-//        if(joinOp == Predicate.Op.EQUALS){
-//            if (t1pkey && !t2pkey) {
-//                card = card2;
-//            } else if (!t1pkey && t2pkey) {
-//                card = card1;
-//            } else if (t1pkey && t2pkey) {
-//                card = Math.min(card1, card2);
-//            } else {
-//                card = Math.max(card1, card2);
-//            }
-//        } else {
-//            card = (int) (0.3 * card1 * card2);
-//        }
-
-        card = (joinOp == Predicate.Op.EQUALS) ?
-                ((t1pkey && !t2pkey) ? card2 : (t2pkey && !t1pkey) ? card1 : (t1pkey && t2pkey) ? Math.min(card1, card2) : Math.max(card1, card2)) :
-                (int) (0.3 * card1 * card2);
-
+        var card = 1;
+        // some code goes here
+        switch (joinOp) {
+            case EQUALS -> {
+                /*
+                当一个属性是主键时，连接操作产生的元组数量小于非主键属性的基数
+                */
+                if (t1pkey && !t2pkey) {
+                    card = card2;
+                } else if (!t1pkey && t2pkey) {
+                    card = card1;
+                } else if (t1pkey && t2pkey) {
+                    /*
+                    连接操作产生的元组数量小于非主键属性的基数,所以应该取min
+                    */
+                    card = Math.min(card1, card2);
+                } else {
+                    /*
+                    对于没有主键的等值连接，card为两个表中较大的那个表的大小
+                    */
+                    card = Math.max(card1, card2);
+                }
+            }
+            case NOT_EQUALS -> {
+                // 记录总数-等值记录数
+                if (t1pkey && !t2pkey) {
+                    card = card1 * card2 - card2;
+                } else if (!t1pkey && t2pkey) {
+                    card = card1 * card2 - card1;
+                } else if (t1pkey && t2pkey) {
+                    card = card1 * card2 - Math.min(card1, card2);
+                } else {
+                    card = card1 * card2 - Math.max(card1, card2);
+                }
+            }
+            default ->
+              	/*
+              	其他查询按范围查询计算
+              	输出的元组大小应该与输入的元组大小成正比；可以假设距离扫描产生的叉乘是固定的一部分(例如30%)
+              	*/
+                    card = (int) (0.3 * card1 * card2);
+        }
         return card <= 0 ? 1 : card;
     }
 
@@ -227,7 +246,6 @@ public class JoinOptimizer {
         }
 
         return els;
-
     }
 
     /**

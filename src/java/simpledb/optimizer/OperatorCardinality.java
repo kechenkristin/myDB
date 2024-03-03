@@ -235,8 +235,8 @@ public class OperatorCardinality {
                     Database.getCatalog().getTableName(tableId))
                     .avgSelectivity(
                             Database.getCatalog().getTupleDesc(tableId)
-                                    .fieldNameToIndex(pureFieldName),
-                            Predicate.Op.EQUALS);
+                                    .fieldNameToIndex(pureFieldName)
+                    );
             a.setEstimatedCardinality((int) (Math.min(childCard,
                     1.0 / groupFieldAvgSelectivity)));
             return hasJoinPK;

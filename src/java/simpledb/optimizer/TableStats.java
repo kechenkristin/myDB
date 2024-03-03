@@ -19,7 +19,6 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * TableStats represents statistics (e.g., histograms) about base tables in a
  * query. 
- * 
  * This class is not needed in implementing lab1 and lab2.
  */
 public class TableStats {
@@ -73,13 +72,13 @@ public class TableStats {
      */
     static final int NUM_HIST_BINS = 100;
 
-    private int pageNum;
-    private int ioCostPerPage;
-    private int tableId;
-    private TupleDesc tupleDesc;
+    private final int pageNum;
+    private final int ioCostPerPage;
+    private final int tableId;
+    private final TupleDesc tupleDesc;
     private int totalTuples;
-    private Map<Integer, IntHistogram> intHistogramMap;
-    private Map<Integer, StringHistogram> stringHistogramMap;
+    private final Map<Integer, IntHistogram> intHistogramMap;
+    private final Map<Integer, StringHistogram> stringHistogramMap;
 
     /**
      * Create a new TableStats object, that keeps track of statistics on each
@@ -184,7 +183,7 @@ public class TableStats {
      * Estimates the cost of sequentially scanning the file, given that the cost
      * to read a page is costPerPageIO. You can assume that there are no seeks
      * and that no pages are in the buffer pool.
-     * 
+     * <p>
      * Also, assume that your hard drive can only read entire pages at once, so
      * if the last page of the table only has one tuple on it, it's just as
      * expensive to read as a full page. (Most real hard drives can't
@@ -212,14 +211,8 @@ public class TableStats {
     /**
      * The average selectivity of the field under op.
      * @param fieldIndex
-     *        the index of the field
-     * @param op
-     *        the operator in the predicate
-     * The semantic of the method is that, given the table, and then given a
-     * tuple, of which we do not know the value of the field, return the
-     * expected selectivity. You may estimate this value from the histograms.
-     * */
-    public double avgSelectivity(int fieldIndex, Predicate.Op op) {
+     *        the index of the field */
+    public double avgSelectivity(int fieldIndex) {
         if (fieldTypeIsInt(fieldIndex)) return intHistogramMap.get(fieldIndex).avgSelectivity();
         return stringHistogramMap.get(fieldIndex).avgSelectivity();
     }

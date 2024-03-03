@@ -6,21 +6,18 @@ import simpledb.execution.Predicate;
  */
 public class IntHistogram {
 
-    private int[] histogram;
-    private int numOfBuckets;
-    private int max;
-    private int min;
-    private double width;
+    private final int[] histogram;
+    private final int numOfBuckets;
+    private final int max;
+    private final int min;
+    private final double width;
     private int numOfTuples;
 
     /**
      * Create a new IntHistogram.
-     * 
      * This IntHistogram should maintain a histogram of integer values that it receives.
      * It should split the histogram into "buckets" buckets.
-     * 
      * The values that are being histogrammed will be provided one-at-a-time through the "addValue()" function.
-     * 
      * Your implementation should use space and have execution time that are both
      * constant with respect to the number of values being histogrammed.  For example, you shouldn't 
      * simply store every value that you see in a sorted list.
@@ -56,8 +53,7 @@ public class IntHistogram {
 
     /**
      * Estimate the selectivity of a particular predicate and operand on this table.
-     * 
-     * For example, if "op" is "GREATER_THAN" and "v" is 5, 
+     * For example, if "op" is "GREATER_THAN" and "v" is 5,
      * return your estimate of the fraction of elements that are greater than 5.
      * 
      * @param op Operator
@@ -68,43 +64,39 @@ public class IntHistogram {
         double selectivity = 0.0;
 
         switch (op) {
-            case LESS_THAN:
+            case LESS_THAN -> {
                 if (constVal <= min) return 0.0;
                 if (constVal >= max) return 1.0;
-
                 int index = getIndex(constVal);
-
                 for (int i = 0; i < index; i++) {
-                    selectivity += (histogram[i] + 0.0) /numOfTuples;
+                    selectivity += (histogram[i] + 0.0) / numOfTuples;
                 }
                 selectivity += histogram[index] * ((constVal - index * width - min) / width) / numOfTuples;
                 return selectivity;
-
-            case EQUALS:
+            }
+            case EQUALS -> {
                 if (constVal < min || constVal > max) return 0.0;
                 return 1.0 * histogram[getIndex(constVal)] / ((int) width + 1) / numOfTuples;
-
-            case NOT_EQUALS:
+            }
+            case NOT_EQUALS -> {
                 return 1 - estimateSelectivity(Predicate.Op.EQUALS, constVal);
-
-            case LESS_THAN_OR_EQ:
+            }
+            case LESS_THAN_OR_EQ -> {
                 return estimateSelectivity(Predicate.Op.LESS_THAN, constVal + 1);
-
-            case GREATER_THAN:
+            }
+            case GREATER_THAN -> {
                 return 1 - estimateSelectivity(Predicate.Op.LESS_THAN_OR_EQ, constVal);
-
-            case GREATER_THAN_OR_EQ:
+            }
+            case GREATER_THAN_OR_EQ -> {
                 return estimateSelectivity(Predicate.Op.GREATER_THAN, constVal - 1);
-
-            default:
-                throw new UnsupportedOperationException("Operation is illegal");
+            }
+            default -> throw new UnsupportedOperationException("Operation is illegal");
         }
     }
     
     /**
      * @return
      *     the average selectivity of this histogram.
-     *     
      *     This is not an indispensable method to implement the basic
      *     join optimization. It may be needed if you want to
      *     implement a more efficient optimization
