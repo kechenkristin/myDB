@@ -179,8 +179,7 @@ public class LogicalPlan {
         Fields are output by the query such that the rightmost field is the first added via addProjectField.
         @param fname the field to add to the output
         @param aggOp the aggregate operation over the field.
-     * @throws ParsingException 
-    */
+     */
     public void addProjectField(String fname, String aggOp) throws ParsingException {
         fname=disambiguateName(fname);
         if (fname.equals("*"))
@@ -198,8 +197,7 @@ public class LogicalPlan {
         @param op the aggregation operator
         @param afield the field to aggregate over
         @param gfield the field to group by
-     * @throws ParsingException 
-    */
+     */
     public void addAggregate(String op, String afield, String gfield) throws ParsingException {
         afield=disambiguateName(afield);
         if (gfield!=null)
@@ -214,8 +212,7 @@ public class LogicalPlan {
         a single ORDER BY field.
         @param field the field to order by
         @param asc true if should be ordered in ascending order, false for descending order
-     * @throws ParsingException 
-    */
+     */
     public void addOrderBy(String field, boolean asc) throws ParsingException {
         field=disambiguateName(field);
         oByField = field;
@@ -299,7 +296,7 @@ public class LogicalPlan {
 
         while (tableIt.hasNext()) {
             LogicalScanNode table = tableIt.next();
-            SeqScan ss = null;
+            SeqScan ss;
             try {
                  ss = new SeqScan(t, Database.getCatalog().getDatabaseFile(table.t).getId(), table.alias);
             } catch (NoSuchElementException e) {
@@ -333,7 +330,7 @@ public class LogicalPlan {
             else
                 f = new StringField(lf.c, Type.STRING_LEN);
 
-            Predicate p = null;
+            Predicate p;
             try {
                 p = new Predicate(subplan.getTupleDesc().fieldNameToIndex(lf.fieldQuantifiedName), lf.p, f);
             } catch (NoSuchElementException e) {
@@ -493,7 +490,7 @@ public class LogicalPlan {
 
         // create the tables, associate them with the data files
         // and tell the catalog about the schema  the tables.
-        HeapFile table1 = new HeapFile(new File("some_data_file1.dat"), td);
+        HeapFile table1 = new HeapFile(new File("data/some_data_file.dat"), td);
         Database.getCatalog().addTable(table1, "t1");
         ts = new TableStats(table1.getId(), 1);
         tableMap.put("t1", ts);

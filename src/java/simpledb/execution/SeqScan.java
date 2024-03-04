@@ -16,6 +16,7 @@ import java.util.*;
  * each tuple of a table in no particular order (e.g., as they are laid out on
  * disk).
  */
+// TODO: fix bug here
 public class SeqScan implements OpIterator {
 
     private static final long serialVersionUID = 1L;
@@ -24,7 +25,7 @@ public class SeqScan implements OpIterator {
     private int tableId;
     private String tableAlias;
 
-    private DbFileIterator dbFileIterator;
+    private final DbFileIterator dbFileIterator;
 
     /**
      * Creates a sequential scan over the specified table as a part of the
@@ -46,6 +47,7 @@ public class SeqScan implements OpIterator {
         this.tid = tid;
         this.tableId = tableId;
         this.tableAlias = tableAlias;
+        dbFileIterator = Database.getCatalog().getDatabaseFile(tableId).iterator(tid);
     }
 
     /**
@@ -87,7 +89,6 @@ public class SeqScan implements OpIterator {
     }
 
     public void open() throws DbException, TransactionAbortedException {
-        dbFileIterator = Database.getCatalog().getDatabaseFile(tableId).iterator(tid);
         dbFileIterator.open();
     }
 

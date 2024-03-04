@@ -158,78 +158,76 @@ public class HeapFile implements DbFile {
         return modified;
     }
 
-    private class HeapFileIterator implements DbFileIterator, Serializable {
 
-        private static final long serialVersionUID = 1L;
+    // TODO: fix bug here
+    private class HeapFileIterator implements DbFileIterator {
 
-        private int curPage = 0;
-        private Iterator<Tuple> curItr = null;
-        private final TransactionId tid;
-        private boolean open = false;
+        private Integer pgCursor;
+        private Iterator<Tuple> tupleIter;
+        private final TransactionId transactionId;
+        private final int tableId;
+        private final int numPages;
 
         public HeapFileIterator(TransactionId tid) {
-            this.tid = tid;
+            this.pgCursor = null;
+            this.tupleIter = null;
+            this.transactionId = tid;
+            this.tableId = getId();
+            this.numPages = numPages();
         }
 
         @Override
         public void open() throws DbException, TransactionAbortedException {
-            open = true;
-            curPage = 0;
-            if (curPage >= numPages()) {
-                return;
-            }
-            curItr = ((HeapPage) Database.getBufferPool().getPage(tid,
-                    new HeapPageId(getId(), curPage), Permissions.READ_ONLY))
-                    .iterator();
-            advance();
+            pgCursor = 0;
+            tupleIter = getTupleIter(pgCursor);
         }
 
-        private void advance() throws DbException, TransactionAbortedException {
-            while (!curItr.hasNext()) {
-                curPage++;
-                if (curPage < numPages()) {
-                    curItr = ((HeapPage) Database.getBufferPool().getPage(tid,
-                            new HeapPageId(getId(), curPage),
-                            Permissions.READ_ONLY)).iterator();
-                } else {
-                    break;
+        @Override
+        public boolean hasNext() throws DbException, TransactionAbortedException {
+            // < numpage - 1
+            if (pgCursor != null) {
+                while (pgCursor < numPages - 1) {
+                    if (tupleIter.hasNext()) {
+                        return true;
+                    } else {
+                        pgCursor += 1;
+                        tupleIter = getTupleIter(pgCursor);
+                    }
                 }
+                return tupleIter.hasNext();
+            } else {
+                return false;
             }
         }
 
         @Override
-        public boolean hasNext() {
-            return open && curPage < numPages();
-        }
-
-        @Override
-        public Tuple next() throws DbException, TransactionAbortedException,
-                NoSuchElementException {
-            if (!open) {
-                throw new NoSuchElementException("iterator not open.");
+        public Tuple next() throws DbException, TransactionAbortedException, NoSuchElementException {
+            if (hasNext())  {
+                return tupleIter.next();
             }
-            if (!hasNext()) {
-                throw new NoSuchElementException("No more tuples.");
-            }
-            Tuple result = curItr.next();
-            advance();
-            return result;
+            throw new NoSuchElementException("HeapFileIterator: error: next: no more elemens");
         }
 
         @Override
         public void rewind() throws DbException, TransactionAbortedException {
-            if (!open) {
-                throw new DbException("iterator not open yet.");
-            }
             close();
             open();
         }
 
         @Override
         public void close() {
-            curItr = null;
-            curPage = 0;
-            open = false;
+            pgCursor = null;
+            tupleIter = null;
+        }
+
+        private Iterator<Tuple> getTupleIter(int pgNo)
+                throws TransactionAbortedException, DbException {
+            PageId pid = new HeapPageId(tableId, pgNo);
+            return ((HeapPage)
+                    Database
+                            .getBufferPool()
+                            .getPage(transactionId, pid, Permissions.READ_ONLY))
+                    .iterator();
         }
     }
 
