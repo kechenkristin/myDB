@@ -3,6 +3,7 @@ package simpledb.common;
 import simpledb.storage.*;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,10 +12,9 @@ public class Utility {
     /**
      * @return a Type array of length len populated with Type.INT_TYPE
      */
-    public static Type[] getTypes(int len) {
+    public static Type[] getIntTypes(int len) {
         Type[] types = new Type[len];
-        for (int i = 0; i < len; ++i)
-            types[i] = Type.INT_TYPE;
+        Arrays.fill(types, Type.INT_TYPE);
         return types;
     }
 
@@ -34,14 +34,14 @@ public class Utility {
      * name + n (name1, name2, etc.).
      */
     public static TupleDesc getTupleDesc(int n, String name) {
-        return new TupleDesc(getTypes(n), getStrings(n, name));
+        return new TupleDesc(getIntTypes(n), getStrings(n, name));
     }
 
     /**
      * @return a TupleDesc with n fields of type Type.INT_TYPE
      */
     public static TupleDesc getTupleDesc(int n) {
-        return new TupleDesc(getTypes(n));
+        return new TupleDesc(getIntTypes(n));
     }
 
     /**
@@ -113,7 +113,7 @@ public class Utility {
         HeapFile hf = openHeapFile(cols, f);
         HeapPageId pid = new HeapPageId(hf.getId(), 0);
 
-        HeapPage page = null;
+        HeapPage page;
         try {
             page = new HeapPage(pid, HeapPage.createEmptyPageData());
         } catch (IOException e) {
@@ -155,7 +155,7 @@ public class Utility {
     public static String listToString(List<Integer> list) {
         StringBuilder out = new StringBuilder();
         for (Integer i : list) {
-            if (out.length() > 0) out.append("\t");
+            if (!out.isEmpty()) out.append("\t");
             out.append(i);
         }
         return out.toString();
