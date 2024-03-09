@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class LockManager {
     /* 记录某个页面是否被加锁了,如果被加锁了,那么是哪些事务加的锁 */
-    private Map<PageId, Map<TransactionId, PageLock>> pageLockMap;
+    private final Map<PageId, Map<TransactionId, PageLock>> pageLockMap;
 
     public LockManager() {
         pageLockMap = new ConcurrentHashMap<>();
@@ -142,7 +142,6 @@ public class LockManager {
         PageLock transactionLock = transactionIdPageLockMap.get(tid);
         if (transactionLock == null) return;
 
-
         final String threadName = Thread.currentThread().getName();
         final String lockTypeStr = PageLock.lockTypeString(transactionLock.getType());
 
@@ -166,6 +165,7 @@ public class LockManager {
         Map<TransactionId, PageLock> transactionIdPageLockMap = pageLockMap.get(pageId);
         if (transactionIdPageLockMap == null)  return false;
         return transactionIdPageLockMap.get(tid) != null;
+
     }
 
     public synchronized void completeTransaction(TransactionId tid) {

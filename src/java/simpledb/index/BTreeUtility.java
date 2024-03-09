@@ -1,5 +1,15 @@
 package simpledb.index;
 
+import simpledb.common.Database;
+import simpledb.common.DbException;
+import simpledb.common.Type;
+import simpledb.common.Utility;
+import simpledb.execution.IndexPredicate;
+import simpledb.execution.Predicate.Op;
+import simpledb.storage.*;
+import simpledb.transaction.TransactionAbortedException;
+import simpledb.transaction.TransactionId;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -7,22 +17,10 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import simpledb.common.Database;
-import simpledb.common.Type;
-import simpledb.common.Utility;
-import simpledb.execution.IndexPredicate;
-import simpledb.execution.Predicate.Op;
-import simpledb.common.DbException;
-import simpledb.storage.*;
-import simpledb.transaction.TransactionAbortedException;
-import simpledb.transaction.TransactionId;
-
 /** Helper methods used for testing and implementing random features. */
 public class BTreeUtility {
 
-	final static Logger logger = LoggerFactory.getLogger(BTreeUtility.class);
+	// final static Logger logger = LoggerFactory.getLogger(BTreeUtility.class);
 
 	public static final int MAX_RAND_VALUE = 1 << 16;
 
@@ -534,7 +532,7 @@ public class BTreeUtility {
 					success = true;
 				}
 			} catch (Exception e) {
-				logger.error(e.getMessage());
+				// logger.error(e.getMessage());
 				synchronized(elock) {
 					error = e;
 				}
@@ -617,7 +615,7 @@ public class BTreeUtility {
 				}
 
 			} catch (Exception e) {
-				logger.error(e.getMessage());
+				// logger.error(e.getMessage());
 				synchronized(elock) {
 					error = e;
 				}
@@ -684,7 +682,7 @@ public class BTreeUtility {
 				}
 			} catch (Exception e) {
 				if(!(e instanceof TransactionAbortedException)) {
-					logger.error(e.getMessage());
+					// logger.error(e.getMessage());
 				}
 				synchronized(elock) {
 					error = e;
@@ -779,7 +777,7 @@ public class BTreeUtility {
 				}
 			} catch (Exception e) {
 				if(!(e instanceof TransactionAbortedException)) {
-					logger.error(e.getMessage());
+					// logger.error(e.getMessage());
 				}
 				synchronized(elock) {
 					error = e;

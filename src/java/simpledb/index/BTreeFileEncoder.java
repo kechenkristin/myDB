@@ -1,19 +1,20 @@
 package simpledb.index;
 
-import java.io.*;
-import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
+import simpledb.common.DbException;
 import simpledb.common.Type;
 import simpledb.common.Utility;
 import simpledb.execution.Predicate.Op;
-import simpledb.common.DbException;
 import simpledb.storage.*;
 import simpledb.transaction.Transaction;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * BTreeFileEncoder reads a comma delimited text file and converts it to
@@ -23,7 +24,7 @@ import simpledb.transaction.TransactionId;
 
 public class BTreeFileEncoder {
 
-	final static Logger logger = LoggerFactory.getLogger(BTreeFileEncoder.class);
+	 // final static Logger logger = LoggerFactory.getLogger(BTreeFileEncoder.class);
 
 	/**
 	 * Encode the file using the BTreeFile's Insert method.
@@ -99,14 +100,14 @@ public class BTreeFileEncoder {
 			}
 			it.close();
 		} catch(TransactionAbortedException | IOException | DbException te){
-			logger.error(te.getMessage());
+			// logger.error(te.getMessage());
 			return bf;
 		}
 
         try {
 			Database.getBufferPool().flushAllPages();
 		} catch(Exception e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		return bf;

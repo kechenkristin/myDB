@@ -1,13 +1,13 @@
 package simpledb;
 
+import junit.framework.JUnit4TestAdapter;
 import org.junit.Test;
-
 import simpledb.common.Utility;
 import simpledb.execution.Predicate;
 import simpledb.systemtest.SimpleDbTestBase;
-import static org.junit.Assert.assertTrue;
+
 import static org.junit.Assert.assertFalse;
-import junit.framework.JUnit4TestAdapter;
+import static org.junit.Assert.assertTrue;
 
 public class PredicateTest extends SimpleDbTestBase{
 

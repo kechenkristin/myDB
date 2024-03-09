@@ -226,3 +226,9 @@ Their contact information can be found on the [course homepage](http://db.csail.
 [resources]: https://help.github.com/articles/what-are-other-good-resources-for-learning-git-and-github
 
 [ssh-key]: https://help.github.com/articles/generating-ssh-keys
+
+## How to use simpleDB
+1. Build jar  
+use ant build to build the jar package
+2. Once get the jar, rememer to config IDEA rather than use command line!
+

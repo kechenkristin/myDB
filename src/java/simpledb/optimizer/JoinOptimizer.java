@@ -1,13 +1,13 @@
 package simpledb.optimizer;
 
-import simpledb.common.Database;
 import simpledb.ParsingException;
+import simpledb.common.Database;
 import simpledb.execution.*;
 
-import java.util.*;
-
 import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import java.util.*;
 
 /**
  * The JoinOptimizer class is responsible for ordering a series of joins
@@ -282,45 +282,35 @@ public class JoinOptimizer {
 10.      optjoin(s) = bestPlan
 11. return optjoin(j)
      */
+    // TODO: fix bug here
     public List<LogicalJoinNode> orderJoins(
             Map<String, TableStats> stats,
             Map<String, Double> filterSelectivities, boolean explain)
             throws ParsingException {
-        PlanCache planCache = new PlanCache();
-        CostCard bestCostCard = new CostCard();
-
-        // join连接对数量
-        int size = joins.size();
-        // 动态规划,求出每一层子集的最佳连接计划
-        for (int i = 1; i <= size; i++) {
-            // 找出给定size的所有子集
-            Set<Set<LogicalJoinNode>> subsets = enumerateSubsets(joins, i);
-            // 计算每个子集最佳连接计划
-            for (Set<LogicalJoinNode> subset : subsets) {
-                double bestCostSoFar = Double.MAX_VALUE;
-                for (LogicalJoinNode joinNode : subset) {
-                    CostCard costCard =
-                            computeCostAndCardOfSubplan(stats, filterSelectivities, joinNode, subset, bestCostSoFar, planCache);
-                    // 返回null,说明无法进行JOIN操作或者当前计算得出的连接成本比已经求出的最低成本贵
-                    if (costCard == null) {
-                        continue;
-                    }
-                    bestCostSoFar = costCard.cost;
-                    bestCostCard = costCard;
-                }
-                if (bestCostSoFar != Double.MAX_VALUE) {
-                    planCache.addPlan(subset, bestCostCard.cost, bestCostCard.card, bestCostCard.plan);
-                }
-            }
-        }
-        // 是否需要输出执行计划
-        if (explain) {
-            printJoins(bestCostCard.plan, planCache, stats, filterSelectivities);
-        }
-        // 最终动态规划计算得到的最佳JOIN计划
-        // 例如: <t1,t2>,<t2,t3>,<t4,t3> --> 对应的SQL JOIN表示为
-        // t4 join (t1 join t2 join t3)
-        return bestCostCard.plan;
+//        int numJoinNodes = joins.size();
+//        PlanCache pc = new PlanCache();
+//        Set<LogicalJoinNode> wholeSet = null;
+//        for(int i = 1; i <= numJoinNodes; i++) {
+//            Set<Set<LogicalJoinNode>> setOfSubset = this.enumerateSubsets(this.joins, i);
+//            for(Set<LogicalJoinNode> s : setOfSubset) {
+//                if(s.size() == numJoinNodes)
+//                    wholeSet = s;
+//                Double bestCostSofar = Double.MAX_VALUE;
+//                CostCard bestPlan = new CostCard(); // 该类用于保存plan，cost，card
+//                for (LogicalJoinNode toRemove : s) {
+//                    CostCard plan = computeCostAndCardOfSubplan(stats, filterSelectivities, toRemove, s, bestCostSofar, pc);
+//                    if (plan != null) {
+//                        bestCostSofar = plan.cost;
+//                        bestPlan = plan;
+//                    }
+//                }
+//                if (bestPlan.plan != null) {
+//                    pc.addPlan(s, bestPlan.cost, bestPlan.card, bestPlan.plan);
+//                }
+//            }
+//        }
+//        return pc.getOrder(wholeSet);
+        return joins;
     }
 
     // ===================== Private Methods =================================

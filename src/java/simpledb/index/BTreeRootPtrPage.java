@@ -1,10 +1,7 @@
 package simpledb.index;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import simpledb.common.DbException;
 import simpledb.storage.BufferPool;
-import simpledb.storage.HeapPage;
 import simpledb.storage.Page;
 import simpledb.transaction.TransactionId;
 
@@ -18,7 +15,7 @@ import java.io.*;
  */
 public class BTreeRootPtrPage implements Page {
 
-	final static Logger logger = LoggerFactory.getLogger(BTreeRootPtrPage.class);
+	// final static Logger logger = LoggerFactory.getLogger(BTreeRootPtrPage.class);
 	// size of this page
 	public final static int PAGE_SIZE = 9;
 
@@ -94,27 +91,27 @@ public class BTreeRootPtrPage implements Page {
 		try{
 			dos.writeInt(root);
 		}catch(IOException e){
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		// write out the category of the root page (leaf or internal)
 		try{
 			dos.writeByte((byte) rootCategory);
 		}catch(IOException e){
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		// write out the header pointer (page number of the first header page)
 		try{
 			dos.writeInt(header);
 		}catch(IOException e){
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		try {
 			dos.flush();
 		}catch(IOException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		return baos.toByteArray();
@@ -151,7 +148,7 @@ public class BTreeRootPtrPage implements Page {
 		try {
 			return new BTreeRootPtrPage(pid,oldData);
 		} catch (IOException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 			//should never happen -- we parsed it OK before!
 			System.exit(1);
 		}

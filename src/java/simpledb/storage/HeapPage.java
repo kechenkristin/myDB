@@ -1,7 +1,7 @@
 package simpledb.storage;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Catalog;
@@ -19,7 +19,7 @@ import java.io.*;
  */
 public class HeapPage implements Page {
 
-    final static Logger logger = LoggerFactory.getLogger(HeapPage.class);
+    // final static Logger logger = LoggerFactory.getLogger(HeapPage.class);
 
     final HeapPageId pid;
     final TupleDesc td;
@@ -67,7 +67,7 @@ public class HeapPage implements Page {
             for (int i = 0; i < tuples.length; i++)
                 tuples[i] = readNextTuple(dis, i);
         } catch (NoSuchElementException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
         }
         dis.close();
 
@@ -105,7 +105,7 @@ public class HeapPage implements Page {
             }
             return new HeapPage(pid, oldDataRef);
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
             //should never happen -- we parsed it OK before!
             System.exit(1);
         }
@@ -152,7 +152,7 @@ public class HeapPage implements Page {
                 t.setField(j, f);
             }
         } catch (java.text.ParseException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
             throw new NoSuchElementException("parsing error!");
         }
 
@@ -181,7 +181,7 @@ public class HeapPage implements Page {
                 dos.writeByte(b);
             } catch (IOException e) {
                 // this really shouldn't happen
-                logger.error(e.getMessage());
+                // logger.error(e.getMessage());
             }
         }
 
@@ -194,7 +194,7 @@ public class HeapPage implements Page {
                     try {
                         dos.writeByte(0);
                     } catch (IOException e) {
-                        logger.error(e.getMessage());
+                        // logger.error(e.getMessage());
                     }
 
                 }
@@ -208,7 +208,7 @@ public class HeapPage implements Page {
                     f.serialize(dos);
 
                 } catch (IOException e) {
-                    logger.error(e.getMessage());
+                    // logger.error(e.getMessage());
                 }
             }
         }
@@ -223,13 +223,13 @@ public class HeapPage implements Page {
         try {
             dos.write(zeroes, 0, zerolen);
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
         }
 
         try {
             dos.flush();
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
         }
 
         return baos.toByteArray();

@@ -1,6 +1,6 @@
 package simpledb;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import simpledb.common.DbException;
 import simpledb.common.Type;
 import simpledb.common.Utility;
@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 public class SimpleDb {
 
-    final static Logger logger = LoggerFactory.getLogger(SimpleDb.class);
+    // final static Logger logger = LoggerFactory.getLogger(SimpleDb.class);
     public static void main (String[] args)
             throws DbException, TransactionAbortedException {
         // convert a file
@@ -93,7 +93,7 @@ public class SimpleDb {
                     System.out.println("Class Parser not found -- perhaps you are trying to run the parser as a part of lab1?");
                 } catch (Exception e) {
                     System.out.println("Error in parser.");
-                    logger.error(e.getMessage());
+                    // logger.error(e.getMessage());
                 }
             }
             default -> {

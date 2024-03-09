@@ -1,7 +1,7 @@
 package simpledb.common;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import simpledb.storage.*;
 
 import java.io.BufferedReader;
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Threadsafe
  */
 public class Catalog {
-    final static Logger logger = LoggerFactory.getLogger(Catalog.class);
+    // final static Logger logger = LoggerFactory.getLogger(Catalog.class);
 
     private final Map<Integer, Table> tables;
     /* maintain this attribute for look up id by name */
@@ -175,7 +175,7 @@ public class Catalog {
                 System.out.println("Added table : " + name + " with schema " + t);
             }
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
             System.exit(0);
         } catch (IndexOutOfBoundsException e) {
             System.out.println("Invalid catalog entry : " + line);

@@ -1,7 +1,7 @@
 package simpledb.index;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import simpledb.common.Catalog;
 import simpledb.common.Database;
 import simpledb.common.DbException;
@@ -25,7 +25,7 @@ import static simpledb.storage.HeapPage.getBytes;
  */
 public class BTreeLeafPage extends BTreePage {
 
-	final static Logger logger = LoggerFactory.getLogger(BTreeLeafPage.class);
+	// final static Logger logger = LoggerFactory.getLogger(BTreeLeafPage.class);
 	private final byte[] header;
 	private final Tuple[] tuples;
 	private final int numSlots;
@@ -81,21 +81,21 @@ public class BTreeLeafPage extends BTreePage {
 			Field f = Type.INT_TYPE.parse(dis);
 			this.parent = ((IntField) f).getValue();
 		} catch (java.text.ParseException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		try {
 			Field f = Type.INT_TYPE.parse(dis);
 			this.leftSibling = ((IntField) f).getValue();
 		} catch (java.text.ParseException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		try {
 			Field f = Type.INT_TYPE.parse(dis);
 			this.rightSibling = ((IntField) f).getValue();
 		} catch (java.text.ParseException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		// allocate and read the header slots of this page
@@ -109,7 +109,7 @@ public class BTreeLeafPage extends BTreePage {
 			for (int i=0; i<tuples.length; i++)
 				tuples[i] = readNextTuple(dis,i);
 		}catch(NoSuchElementException e){
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 		dis.close();
 
@@ -148,7 +148,7 @@ public class BTreeLeafPage extends BTreePage {
 			}
 			return new BTreeLeafPage(pid,oldDataRef,keyField);
 		} catch (IOException e) {
-			logger.error(e.getMessage());
+			//logger.error(e.getMessage());
 			//should never happen -- we parsed it OK before!
 			System.exit(1);
 		}
@@ -189,7 +189,7 @@ public class BTreeLeafPage extends BTreePage {
 				t.setField(j, f);
 			}
 		} catch (java.text.ParseException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 			throw new NoSuchElementException("parsing error!");
 		}
 
@@ -217,19 +217,19 @@ public class BTreeLeafPage extends BTreePage {
 			dos.writeInt(parent);
 
 		} catch (IOException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 		try {
 			dos.writeInt(leftSibling);
 
 		} catch (IOException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 		try {
 			dos.writeInt(rightSibling);
 
 		} catch (IOException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		// create the header of the page
@@ -238,7 +238,7 @@ public class BTreeLeafPage extends BTreePage {
                 dos.writeByte(b);
             } catch (IOException e) {
                 // this really shouldn't happen
-                logger.error(e.getMessage());
+                // logger.error(e.getMessage());
             }
         }
 
@@ -251,7 +251,7 @@ public class BTreeLeafPage extends BTreePage {
 					try {
 						dos.writeByte(0);
 					} catch (IOException e) {
-						logger.error(e.getMessage());
+						// logger.error(e.getMessage());
 					}
 
 				}
@@ -265,7 +265,7 @@ public class BTreeLeafPage extends BTreePage {
 					f.serialize(dos);
 
 				} catch (IOException e) {
-					logger.error(e.getMessage());
+					// logger.error(e.getMessage());
 				}
 			}
 		}

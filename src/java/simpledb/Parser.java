@@ -1,29 +1,30 @@
 package simpledb;
 
 import Zql.*;
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
 import jline.ArgumentCompletor;
 import jline.ConsoleReader;
 import jline.SimpleCompletor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Type;
 import simpledb.execution.*;
 import simpledb.optimizer.LogicalPlan;
 import simpledb.optimizer.TableStats;
-import simpledb.storage.*;
+import simpledb.storage.IntField;
+import simpledb.storage.StringField;
+import simpledb.storage.Tuple;
+import simpledb.storage.TupleDesc;
 import simpledb.transaction.Transaction;
 import simpledb.transaction.TransactionId;
 
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+
 public class Parser {
 
-    final static Logger logger = LoggerFactory.getLogger(Parser.class);
+    // final static Logger logger = LoggerFactory.getLogger(Parser.class);
     static boolean explain = false;
 
     public static Predicate.Op getOp(String s) throws simpledb.ParsingException {
@@ -165,7 +166,7 @@ public class Parser {
 
                 // XXX handle subquery?
             } catch (NoSuchElementException e) {
-                logger.error(e.getMessage());
+                // logger.error(e.getMessage());
                 throw new ParsingException("Table "
                         + fromIt.getTable() + " is not in catalog");
             }
@@ -305,7 +306,7 @@ public class Parser {
                 m.invoke(c.newInstance(), physicalPlan,System.out);
             } catch (ClassNotFoundException | SecurityException ignored) {
             } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException | IllegalArgumentException e) {
-                logger.error(e.getMessage());
+                // logger.error(e.getMessage());
             }
         }
 
@@ -548,7 +549,7 @@ public class Parser {
             }
 
         } catch (IOException | DbException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
         } catch (simpledb.ParsingException e) {
             System.out
                     .println("Invalid SQL expression: \n \t" + e.getMessage());
@@ -617,7 +618,7 @@ public class Parser {
                 try {
                     Thread.sleep(SLEEP_TIME);
                 } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
+                    // logger.error(e.getMessage());
                 }
 
                 long startTime = System.currentTimeMillis();
@@ -630,7 +631,7 @@ public class Parser {
                 this.shutdown();
             } catch (FileNotFoundException e) {
                 System.out.println("Unable to find query file" + queryFile);
-                logger.error(e.getMessage());
+                // logger.error(e.getMessage());
             }
         } else { // no query file, run interactive prompt
             ConsoleReader reader = new ConsoleReader();

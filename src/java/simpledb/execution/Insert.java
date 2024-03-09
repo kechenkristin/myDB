@@ -1,7 +1,7 @@
 package simpledb.execution;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.storage.*;
@@ -16,7 +16,7 @@ import java.io.IOException;
  */
 public class Insert extends Operator {
 
-    final static Logger logger = LoggerFactory.getLogger(Insert.class);
+    // final static Logger logger = LoggerFactory.getLogger(Insert.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -81,7 +81,7 @@ public class Insert extends Operator {
                 bufferPool.insertTuple(tid, tableId, child.next());
                 insertTuples++;
             } catch (IOException e) {
-                logger.error(e.getMessage());
+                // logger.error(e.getMessage());
             }
         }
         insertTuple = new Tuple(this.tupleDesc);

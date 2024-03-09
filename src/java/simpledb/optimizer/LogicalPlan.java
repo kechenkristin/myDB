@@ -1,6 +1,6 @@
 package simpledb.optimizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import simpledb.common.Catalog;
 import simpledb.common.Database;
 import simpledb.ParsingException;
@@ -28,7 +28,7 @@ import java.io.File;
  */
 public class LogicalPlan {
 
-    final static Logger logger = LoggerFactory.getLogger(LogicalPlan.class);
+    // final static Logger logger = LoggerFactory.getLogger(LogicalPlan.class);
     private List<LogicalJoinNode> joins;
     private final List<LogicalScanNode> tables;
     private final List<LogicalFilterNode> filters;
@@ -522,7 +522,7 @@ public class LogicalPlan {
         try {
             j = lp.physicalPlan(tid,tableMap, false);
         } catch (ParsingException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
             System.exit(0);
         }
         // and run it
@@ -536,7 +536,7 @@ public class LogicalPlan {
             Database.getBufferPool().transactionComplete(tid);
 
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
         }
        
     }

@@ -1,7 +1,7 @@
 package simpledb.execution;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Type;
@@ -17,7 +17,7 @@ import java.io.IOException;
  */
 public class Delete extends Operator {
 
-    final static Logger logger = LoggerFactory.getLogger(Delete.class);
+    // final static Logger logger = LoggerFactory.getLogger(Delete.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -86,7 +86,7 @@ public class Delete extends Operator {
                 bufferPool.deleteTuple(tid, child.next());
                 deleteNums++;
             } catch (IOException e) {
-                logger.error(e.getMessage());
+                // logger.error(e.getMessage());
             }
         }
         deleteTuple = new Tuple(tupleDesc);

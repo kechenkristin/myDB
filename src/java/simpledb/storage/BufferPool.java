@@ -1,7 +1,7 @@
 package simpledb.storage;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
 import simpledb.common.Permissions;
 import simpledb.common.DbException;
@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class BufferPool {
 
-    final static Logger logger = LoggerFactory.getLogger(BufferPool.class);
+    // final static Logger logger = LoggerFactory.getLogger(BufferPool.class);
     /** Bytes per page, including header. */
     private static final int DEFAULT_PAGE_SIZE = 4096;
 
@@ -50,7 +50,6 @@ public class BufferPool {
     private final LockManager lockManager;
 
     public BufferPool(int numPages) {
-        // some code goes here
         this.numPages = numPages;
         this.pageCache = new ConcurrentHashMap<>();
         this.evict = new LRUEvict(numPages);
@@ -101,13 +100,15 @@ public class BufferPool {
         while (true){
             try{
                 if (lockManager.acquireLock(pid,tid,acquireType)){
+                    System.out.println("Lock manage successfully gets the lock!");
                     break;
                 }
             } catch (InterruptedException e){
-                logger.error(e.getMessage());
+                // logger.error(e.getMessage());
             }
             long now = System.currentTimeMillis();
             if(now-start > timeout){
+                System.out.println("Deadlock exceeds time out!");
                 throw new TransactionAbortedException();
             }
         }
@@ -173,7 +174,7 @@ public class BufferPool {
             try {
                 flushPages(tid);
             } catch (IOException e) {
-                logger.error(e.getMessage());
+                // logger.error(e.getMessage());
             }
         } else {
             recoverPages(tid);
@@ -338,8 +339,7 @@ public class BufferPool {
             }
         }
         if (isAllDirty) {
-            throw new DbException("The page in bufferpool is all dirty.");
+            throw new DbException("The page in BufferPool is all dirty.");
         }
     }
-
 }

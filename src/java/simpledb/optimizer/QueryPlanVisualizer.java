@@ -1,18 +1,16 @@
 package simpledb.optimizer;
 
-import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.Iterator;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import simpledb.execution.*;
 import simpledb.storage.TupleDesc;
 import simpledb.storage.TupleDesc.TDItem;
 
+import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.Iterator;
+
 public class QueryPlanVisualizer {
 
-    final static Logger logger = LoggerFactory.getLogger(QueryPlanVisualizer.class);
+    // final static Logger logger = LoggerFactory.getLogger(QueryPlanVisualizer.class);
 
     static final String JOIN = "⨝";
     static final String HASH_JOIN = "⨝(hash)";
@@ -274,7 +272,7 @@ public class QueryPlanVisualizer {
                     name = (String) plan.getClass().getMethod("getName").invoke(plan);
                     card = (Integer) plan.getClass().getMethod("getEstimatedCardinality").invoke(plan);
                 } catch (Exception e) {
-                    logger.error(e.getMessage());
+                    // logger.error(e.getMessage());
                 } 
 
                 thisNode.text = String.format("%1$s,card:%2$d", name,card);
@@ -309,7 +307,7 @@ public class QueryPlanVisualizer {
                     newName=(String) plan.getClass().getMethod("newName", (Class<?>[])null).invoke(plan);
                     fieldIdx = (Integer) plan.getClass().getMethod("renamedField", (Class<?>[])null).invoke(plan);
                 } catch (Exception e) {
-                    logger.error(e.getMessage());
+                    // logger.error(e.getMessage());
                 } 
                 String oldName = plan.getChildren()[0].getTupleDesc().getFieldName(fieldIdx);
                 thisNode.text = String.format("%1$s,%2$s->%3$s,card:%4$d", RENAME,oldName,newName,plan.getEstimatedCardinality());

@@ -1,7 +1,7 @@
 package simpledb.common;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import simpledb.storage.BufferPool;
 import simpledb.storage.LogFile;
 
@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class Database {
 
-    final static Logger logger = LoggerFactory.getLogger(Database.class);
+    // final static Logger logger = LoggerFactory.getLogger(Database.class);
     private static final AtomicReference<Database> _instance = new AtomicReference<>(new Database());
     private final Catalog _catalog;
     private final BufferPool _bufferpool;
@@ -35,7 +35,7 @@ public class Database {
         try {
             tmp = new LogFile(new File(LOGFILENAME));
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
             System.exit(1);
         }
         _logfile = tmp;
@@ -68,7 +68,7 @@ public class Database {
             bufferPoolF.setAccessible(true);
             bufferPoolF.set(_instance.get(), new BufferPool(pages));
         } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
         }
 //        _instance._bufferpool = new BufferPool(pages);
         return _instance.get()._bufferpool;

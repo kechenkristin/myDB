@@ -7,7 +7,7 @@ public class PageLock {
     public static final int WRITE = 1;
     private int type;
 
-    private TransactionId tid;
+    private final TransactionId tid;
 
     public PageLock(int type, TransactionId transactionId) {
         tid = transactionId;

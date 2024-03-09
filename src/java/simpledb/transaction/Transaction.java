@@ -1,9 +1,8 @@
 package simpledb.transaction;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import simpledb.common.Database;
-import simpledb.storage.HeapPage;
 
 import java.io.*;
 
@@ -14,7 +13,7 @@ import java.io.*;
 
 public class Transaction {
 
-    final static Logger logger = LoggerFactory.getLogger(Transaction.class);
+    // final static Logger logger = LoggerFactory.getLogger(Transaction.class);
     private final TransactionId tid;
     volatile boolean started = false;
 
@@ -28,7 +27,7 @@ public class Transaction {
         try {
             Database.getLogFile().logXactionBegin(tid);
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
         }
     }
 

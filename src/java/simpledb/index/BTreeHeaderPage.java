@@ -1,11 +1,12 @@
 package simpledb.index;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import simpledb.common.DbException;
 import simpledb.common.Debug;
 import simpledb.common.Type;
-import simpledb.storage.*;
+import simpledb.storage.BufferPool;
+import simpledb.storage.Field;
+import simpledb.storage.IntField;
+import simpledb.storage.Page;
 import simpledb.transaction.TransactionId;
 
 import java.io.*;
@@ -21,7 +22,7 @@ import java.util.Arrays;
  */
 public class BTreeHeaderPage implements Page {
 
-	final static Logger logger = LoggerFactory.getLogger(BTreeHeaderPage.class);
+	// final static Logger logger = LoggerFactory.getLogger(BTreeHeaderPage.class);
 	private volatile boolean dirty = false;
 	private volatile TransactionId dirtier = null;
 	
@@ -55,14 +56,14 @@ public class BTreeHeaderPage implements Page {
 			Field f = Type.INT_TYPE.parse(dis);
 			this.nextPage = ((IntField) f).getValue();
 		} catch (java.text.ParseException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		try {
 			Field f = Type.INT_TYPE.parse(dis);
 			this.prevPage = ((IntField) f).getValue();
 		} catch (java.text.ParseException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		// allocate and read the header slots of this page
@@ -109,7 +110,7 @@ public class BTreeHeaderPage implements Page {
 			}
 			return new BTreeHeaderPage(pid,oldDataRef);
 		} catch (IOException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 			//should never happen -- we parsed it OK before!
 			System.exit(1);
 		}
@@ -151,13 +152,13 @@ public class BTreeHeaderPage implements Page {
 			dos.writeInt(nextPage);
 
 		} catch (IOException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 		try {
 			dos.writeInt(prevPage);
 
 		} catch (IOException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		// create the header of the page
@@ -166,14 +167,14 @@ public class BTreeHeaderPage implements Page {
                 dos.writeByte(b);
             } catch (IOException e) {
                 // this really shouldn't happen
-                logger.error(e.getMessage());
+                // logger.error(e.getMessage());
             }
         }
 
 		try {
 			dos.flush();
 		} catch (IOException e) {
-			logger.error(e.getMessage());
+			// logger.error(e.getMessage());
 		}
 
 		return baos.toByteArray();
