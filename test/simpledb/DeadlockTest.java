@@ -1,13 +1,9 @@
 package simpledb;
 
-import simpledb.TestUtil.LockGrabber;
-
-import java.util.*;
+import junit.framework.JUnit4TestAdapter;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import junit.framework.JUnit4TestAdapter;
+import simpledb.TestUtil.LockGrabber;
 import simpledb.common.Database;
 import simpledb.common.Permissions;
 import simpledb.common.Utility;
@@ -15,6 +11,11 @@ import simpledb.storage.BufferPool;
 import simpledb.storage.HeapPageId;
 import simpledb.storage.PageId;
 import simpledb.transaction.TransactionId;
+
+import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class DeadlockTest extends TestUtil.CreateHeapFile {
   private PageId p0;
@@ -100,7 +101,7 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
       if (!lg1Write.acquired() && lg2Write.acquired()) break;
 
       if (lg1Write.getError() != null) {
-        lg1Read.stop(); lg1Write.stop();
+        lg1Read.interrupt(); lg1Write.interrupt();
         bp.transactionComplete(tid1);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));
 
@@ -110,7 +111,7 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
       }
 
       if (lg2Write.getError() != null) {
-        lg2Read.stop(); lg2Write.stop();
+        lg2Read.interrupt(); lg2Write.interrupt();
         bp.transactionComplete(tid2);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));
 
@@ -148,7 +149,7 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
       if (!lg1Write1.acquired() && lg2Write0.acquired()) break;
 
       if (lg1Write1.getError() != null) {
-        lg1Write0.stop(); lg1Write1.stop();
+        lg1Write0.interrupt(); lg1Write1.interrupt();
         bp.transactionComplete(tid1);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));
 
@@ -158,7 +159,7 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
       }
 
       if (lg2Write0.getError() != null) {
-        lg2Write0.stop(); lg2Write1.stop();
+        lg2Write0.interrupt(); lg2Write1.interrupt();
         bp.transactionComplete(tid2);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));
 
@@ -196,7 +197,7 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
       if (!lg1Write.acquired() && lg2Write.acquired()) break;
 
       if (lg1Write.getError() != null) {
-        lg1Read.stop(); lg1Write.stop();
+        lg1Read.interrupt(); lg1Write.interrupt();
         bp.transactionComplete(tid1);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));
 
@@ -206,7 +207,7 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
       }
 
       if (lg2Write.getError() != null) {
-        lg2Read.stop(); lg2Write.stop();
+        lg2Read.interrupt(); lg2Write.interrupt();
         bp.transactionComplete(tid2);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));
 
