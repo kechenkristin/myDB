@@ -1,17 +1,6 @@
 package simpledb.systemtest;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.junit.Test;
-
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.execution.Delete;
@@ -23,7 +12,18 @@ import simpledb.transaction.Transaction;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
-import static org.junit.Assert.*;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Tests running concurrent transactions.
@@ -63,7 +63,6 @@ public class TransactionTest extends SimpleDbTestBase {
 
             if (tester.exception != null) {
                 // Rethrow any exception from a child thread
-                assert tester.exception != null;
                 throw new RuntimeException("Child thread threw an exception.", tester.exception);
             }
             assert tester.completed;

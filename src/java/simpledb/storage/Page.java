@@ -8,7 +8,7 @@ import simpledb.transaction.TransactionId;
  * <p>
  * Pages may be "dirty", indicating that they have been modified since they
  * were last written out to disk.
- *
+ * <p>
  * For recovery purposes, pages MUST have a single constructor of the form:
  *     Page(PageId id, byte[] data)
  */
@@ -24,7 +24,7 @@ public interface Page {
     PageId getId();
 
     /**
-     * Get the id of the transaction that last dirtied this page, or null if the page is clean..
+     * Get the id of the transaction that last dirtied this page, or null if the page is clean.
      *
      * @return The id of the transaction that last dirtied this page, or null
      */

@@ -77,8 +77,7 @@ public abstract class BTreePage implements Page {
 	 * @return The returned ByteArray.
 	 */
 	public static byte[] createEmptyPageData() {
-		int len = BufferPool.getPageSize();
-		return new byte[len]; //all 0
+		return new byte[BufferPool.getPageSize()]; //all 0
 	}
 
 	/**
@@ -86,10 +85,7 @@ public abstract class BTreePage implements Page {
 	 * @return the parent id
 	 */
 	public BTreePageId getParentId() {
-		if(parent == 0) {
-			return BTreeRootPtrPage.getId(pid.getTableId());
-		}
-		return new BTreePageId(pid.getTableId(), parent, BTreePageId.INTERNAL);
+		return parent == 0 ? BTreeRootPtrPage.getId(pid.getTableId()) : new BTreePageId(pid.getTableId(), parent, BTreePageId.INTERNAL);
 	}
 
 	/**
@@ -128,10 +124,7 @@ public abstract class BTreePage implements Page {
 	 * Returns the tid of the transaction that last dirtied this page, or null if the page is not dirty
 	 */
 	public TransactionId isDirty() {
-		if (this.dirty)
-			return this.dirtier;
-		else
-			return null;
+		return dirty ? this.dirtier : null;
 	}
 
 	/**
@@ -143,6 +136,5 @@ public abstract class BTreePage implements Page {
 	 * Returns true if associated slot on this page is filled.
 	 */
 	public abstract boolean isSlotUsed(int i);
-
 }
 

@@ -165,7 +165,6 @@ public class LockManager {
         Map<TransactionId, PageLock> transactionIdPageLockMap = pageLockMap.get(pageId);
         if (transactionIdPageLockMap == null)  return false;
         return transactionIdPageLockMap.get(tid) != null;
-
     }
 
     public synchronized void completeTransaction(TransactionId tid) {

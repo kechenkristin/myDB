@@ -2,18 +2,14 @@ package simpledb.storage;
 
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
-import simpledb.common.Database;
-import simpledb.common.Permissions;
-import simpledb.common.DbException;
+
+import simpledb.common.*;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
-import simpledb.common.LockManager;
 
-import java.io.*;
-
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -90,21 +86,18 @@ public class BufferPool {
      * @param perm the requested permissions on the page
      */
     public  Page getPage(TransactionId tid, PageId pid, Permissions perm)
-            throws TransactionAbortedException, DbException {
-        int acquireType = 0;
-        if (perm == Permissions.READ_WRITE){
-            acquireType = 1;
-        }
+            throws TransactionAbortedException, DbException{
+        // lab5
+        int acquireType = perm == Permissions.READ_WRITE ? PageLock.WRITE : PageLock.READ;
+
         long start = System.currentTimeMillis();
-        long timeout = new Random().nextInt(2000) + 1000;
-        while (true){
-            try{
-                if (lockManager.acquireLock(pid,tid,acquireType)){
-                    System.out.println("Lock manage successfully gets the lock!");
-                    break;
-                }
-            } catch (InterruptedException e){
-                // logger.error(e.getMessage());
+        long timeout = 500;
+
+        boolean isAcquired = false;
+        while (!isAcquired) {
+            try {
+                isAcquired = lockManager.acquireLock(pid, tid, acquireType);
+            } catch (InterruptedException ignored) {
             }
             long now = System.currentTimeMillis();
             if(now-start > timeout){
@@ -112,7 +105,24 @@ public class BufferPool {
                 throw new TransactionAbortedException();
             }
         }
-        // some code goes here
+
+//        while (true){
+//            try{
+//                if (lockManager.acquireLock(pid,tid,acquireType)){
+//                    System.out.println("Lock manage successfully gets the lock!");
+//                    break;
+//                }
+//            } catch (InterruptedException e){
+//                // logger.error(e.getMessage());
+//            }
+//            long now = System.currentTimeMillis();
+//            if(now-start > timeout){
+//                System.out.println("Deadlock exceeds time out!");
+//                throw new TransactionAbortedException();
+//            }
+//        }
+
+        // lab3
         if(!pageCache.containsKey(pid)){
             DbFile dbFile = getDbFile(pid.getTableId());
             Page page = dbFile.readPage(pid);
@@ -255,8 +265,7 @@ public class BufferPool {
     public synchronized void flushAllPages() throws IOException {
         // some code goes here
         // not necessary for lab1
-        for (Map.Entry<PageId, Page> entry : pageCache.entrySet()) {
-            Page page = entry.getValue();
+        for (Page page: pageCache.values()) {
             if (page.isDirty() != null) {
                 flushPage(page.getId());
             }
@@ -305,15 +314,9 @@ public class BufferPool {
     /** Write all pages of the specified transaction to disk.
      */
     public synchronized  void flushPages(TransactionId tid) throws IOException {
-        // some code goes here
-        // not necessary for lab1|lab2
-        for (Map.Entry<PageId, Page> entry : pageCache.entrySet()){
-            Page page = entry.getValue();
-            page.setBeforeImage();
-            if (page.isDirty() == tid){
-                flushPage(page.getId());
-            }
-        }
+       for (Page page : pageCache.values()) {
+           if (tid.equals(page.isDirty())) flushPage(page.getId());
+       }
     }
 
     /**
@@ -321,14 +324,15 @@ public class BufferPool {
      * Flushes the page to disk to ensure dirty pages are updated on disk.
      */
     private synchronized  void evictPage() throws DbException {
-        // some code goes here
-        // not necessary for lab1
+//         some code goes here
+//         not necessary for lab1
         PageId evictPageId;
         Page page;
         boolean isAllDirty = true;
         for (int i = 0; i < pageCache.size(); i++) {
             evictPageId = evict.getEvictPageId();
-            page = pageCache.get(evictPageId);
+            // page = pageCache.get(evictPageId);
+            page = getDbFile(evictPageId.getTableId()).readPage(evictPageId);
             if (page.isDirty() != null) {
                 evict.modifyData(evictPageId);
             } else {

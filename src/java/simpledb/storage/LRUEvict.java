@@ -1,7 +1,5 @@
 package simpledb.storage;
 
-import simpledb.storage.PageId;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

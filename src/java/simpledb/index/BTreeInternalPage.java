@@ -145,7 +145,7 @@ public class BTreeInternalPage extends BTreePage {
         -- used by recovery */
 	public BTreeInternalPage getBeforeImage(){
 		try {
-			byte[] oldDataRef = null;
+			byte[] oldDataRef;
 			synchronized(oldDataLock)
 			{
 				oldDataRef = oldData;
@@ -184,7 +184,7 @@ public class BTreeInternalPage extends BTreePage {
 		}
 
 		// read the key field
-		Field f = null;
+		Field f;
 		try {
 			f = td.getFieldType(keyField).parse(dis);
 		} catch (java.text.ParseException e) {

@@ -20,18 +20,13 @@ public class BTreePageId implements PageId {
 	private final int pgcateg;
 
 	static public String categToString(int categ) {
-		switch (categ) {
-			case ROOT_PTR:
-				return "ROOT_PTR";
-			case INTERNAL:
-				return "INTERNAL";
-			case LEAF:
-				return "LEAF";
-			case HEADER:
-				return "HEADER";
-			default:
-				throw new IllegalArgumentException("categ");
-		}
+        return switch (categ) {
+            case ROOT_PTR -> "ROOT_PTR";
+            case INTERNAL -> "INTERNAL";
+            case LEAF -> "LEAF";
+            case HEADER -> "HEADER";
+            default -> throw new IllegalArgumentException("categ");
+        };
 	}
 
 	/**
@@ -86,9 +81,8 @@ public class BTreePageId implements PageId {
 	 *   ids and pgcateg are the same)
 	 */
 	public boolean equals(Object o) {
-		if (!(o instanceof BTreePageId))
+		if (!(o instanceof BTreePageId p))
 			return false;
-		BTreePageId p = (BTreePageId)o;
 		return tableId == p.tableId && pgNo == p.pgNo && pgcateg == p.pgcateg;
 	}
 

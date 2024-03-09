@@ -103,7 +103,7 @@ public class BTreeHeaderPage implements Page {
         -- used by recovery */
 	public BTreeHeaderPage getBeforeImage(){
 		try {
-			byte[] oldDataRef = null;
+			byte[] oldDataRef;
 			synchronized(oldDataLock)
 			{
 				oldDataRef = oldData;
@@ -150,16 +150,11 @@ public class BTreeHeaderPage implements Page {
 		// write out the next and prev pointers
 		try {
 			dos.writeInt(nextPage);
-
-		} catch (IOException e) {
-			// logger.error(e.getMessage());
-		}
-		try {
 			dos.writeInt(prevPage);
-
 		} catch (IOException e) {
 			// logger.error(e.getMessage());
 		}
+
 
 		// create the header of the page
         for (byte b : header) {
@@ -219,7 +214,6 @@ public class BTreeHeaderPage implements Page {
 	/**
 	 * Set the page id of the previous header page
 	 * @param id - the page id of the previous header page
-	 * @throws DbException
 	 */
 	public void setPrevPageId(BTreePageId id) throws DbException {
 		if(id == null) {
@@ -239,7 +233,6 @@ public class BTreeHeaderPage implements Page {
 	/**
 	 * Set the page id of the next header page
 	 * @param id - the page id of the next header page
-	 * @throws DbException
 	 */
 	public void setNextPageId(BTreePageId id) throws DbException {
 		if(id == null) {
@@ -304,14 +297,12 @@ public class BTreeHeaderPage implements Page {
 	 */
 	public int getEmptySlot() {
 		for (int i=0; i<header.length; i++) {
-			if((int) header[i] != 0xFF) {
-				for(int j = 0; j < 8; j++) {
-					if(!isSlotUsed(i*8 + j)) {
-						return i*8 + j;
-					}
-				}
-			}
-		}
+            for (int j = 0; j < 8; j++) {
+                if (!isSlotUsed(i * 8 + j)) {
+                    return i * 8 + j;
+                }
+            }
+        }
 		return -1;
 	}
 }
