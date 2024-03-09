@@ -24,7 +24,7 @@ public class BTreeScan implements OpIterator {
 	private boolean isOpen = false;
 	private final TransactionId tid;
 	private TupleDesc myTd;
-	private IndexPredicate ipred = null;
+	private final IndexPredicate ipred;
 	private transient DbFileIterator it;
 	private String tablename;
 	private String alias;

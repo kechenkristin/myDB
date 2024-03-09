@@ -185,8 +185,7 @@ public class BTreeHeaderPage implements Page {
 	 * @return The returned ByteArray.
 	 */
 	public static byte[] createEmptyPageData() {
-		int len = BufferPool.getPageSize();
-		return new byte[len]; //all 0
+		return new byte[BufferPool.getPageSize()]; //all 0
 	}
 
 	/**
@@ -262,10 +261,7 @@ public class BTreeHeaderPage implements Page {
 	 * Returns the tid of the transaction that last dirtied this page, or null if the page is not dirty
 	 */
 	public TransactionId isDirty() {
-		if (this.dirty)
-			return this.dirtier;
-		else
-			return null;
+		return dirty ? dirtier : null;
 	}
 
 	/**

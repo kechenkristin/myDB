@@ -141,7 +141,7 @@ public class BTreeLeafPage extends BTreePage {
         -- used by recovery */
 	public BTreeLeafPage getBeforeImage(){
 		try {
-			byte[] oldDataRef = null;
+			byte[] oldDataRef;
 			synchronized(oldDataLock)
 			{
 				oldDataRef = oldData;
@@ -332,7 +332,7 @@ public class BTreeLeafPage extends BTreePage {
 
 		// shift records back or forward to fill empty slot and make room for new record
 		// while keeping records in sorted order
-		int goodSlot = -1;
+		int goodSlot;
 		if(emptySlot < lessOrEqKey) {
 			for(int i = emptySlot; i < lessOrEqKey; i++) {
 				moveRecord(i+1, i);
@@ -373,10 +373,7 @@ public class BTreeLeafPage extends BTreePage {
 	 * @return the id of the left sibling
 	 */
 	public BTreePageId getLeftSiblingId() {
-		if(leftSibling == 0) {
-			return null;
-		}
-		return new BTreePageId(pid.getTableId(), leftSibling, BTreePageId.LEAF);
+		return leftSibling == 0 ? null : new BTreePageId(pid.getTableId(), leftSibling, BTreePageId.LEAF);
 	}
 
 	/**
@@ -384,10 +381,7 @@ public class BTreeLeafPage extends BTreePage {
 	 * @return the id of the right sibling
 	 */
 	public BTreePageId getRightSiblingId() {
-		if(rightSibling == 0) {
-			return null;
-		}
-		return new BTreePageId(pid.getTableId(), rightSibling, BTreePageId.LEAF);
+		return rightSibling == 0 ? null : new BTreePageId(pid.getTableId(), rightSibling, BTreePageId.LEAF);
 	}
 
 	/**
@@ -491,7 +485,6 @@ public class BTreeLeafPage extends BTreePage {
 	 * protected method used by the iterator to get the ith tuple out of this page
 	 * @param i - the index of the tuple
 	 * @return the ith tuple in the page
-	 * @throws NoSuchElementException
 	 */
 	Tuple getTuple(int i) throws NoSuchElementException {
 
@@ -545,9 +538,7 @@ class BTreeLeafPageIterator implements Iterator<Tuple> {
 
 		if (next == null) {
 			if (hasNext()) {
-				next = nextToReturn;
-				nextToReturn = null;
-				return next;
+                return null;
 			} else
 				throw new NoSuchElementException();
 		} else {
@@ -595,9 +586,7 @@ class BTreeLeafPageReverseIterator implements Iterator<Tuple> {
 
 		if (next == null) {
 			if (hasNext()) {
-				next = nextToReturn;
-				nextToReturn = null;
-				return next;
+				return null;
 			} else
 				throw new NoSuchElementException();
 		} else {

@@ -136,10 +136,7 @@ public class BTreeRootPtrPage implements Page {
 	}
 
 	public TransactionId isDirty() {
-		if (this.dirty)
-			return this.dirtier;
-		else
-			return null;
+		return dirty ? dirtier : null;
 	}
 
 	/** Return a view of this page before it was modified
@@ -160,10 +157,7 @@ public class BTreeRootPtrPage implements Page {
 	 * @return the id of the root page
 	 */
 	public BTreePageId getRootId() {
-		if(root == 0) {
-			return null;
-		}
-		return new BTreePageId(pid.getTableId(), root, rootCategory);
+		return root == 0 ? null : new BTreePageId(pid.getTableId(), root, rootCategory);
 	}
 
 	/**
@@ -192,10 +186,7 @@ public class BTreeRootPtrPage implements Page {
 	 * @return the id of the first header page
 	 */
 	public BTreePageId getHeaderId() {
-		if(header == 0) {
-			return null;
-		}
-		return new BTreePageId(pid.getTableId(), header, BTreePageId.HEADER);
+		return header == 0 ? null : new BTreePageId(pid.getTableId(), header, BTreePageId.HEADER);
 	}
 
 	/**

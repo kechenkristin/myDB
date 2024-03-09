@@ -213,7 +213,7 @@ public class BTreeInternalPage extends BTreePage {
 		}
 
 		// read child pointer
-		int child = -1;
+		int child;
 		try {
 			Field f = Type.INT_TYPE.parse(dis);
 			child = ((IntField) f).getValue();
@@ -515,7 +515,7 @@ public class BTreeInternalPage extends BTreePage {
 
 		// shift entries back or forward to fill empty slot and make room for new entry
 		// while keeping entries in sorted order
-		int goodSlot = -1;
+		int goodSlot;
 		if(emptySlot < lessOrEqKey) {
 			for(int i = emptySlot; i < lessOrEqKey; i++) {
 				moveEntry(i+1, i);
@@ -613,7 +613,6 @@ public class BTreeInternalPage extends BTreePage {
 	 * protected method used by the iterator to get the ith key out of this page
 	 * @param i - the index of the key
 	 * @return the ith key
-	 * @throws NoSuchElementException
 	 */
 	protected Field getKey(int i) throws NoSuchElementException {
 
@@ -639,7 +638,6 @@ public class BTreeInternalPage extends BTreePage {
 	 * protected method used by the iterator to get the ith child page id out of this page
 	 * @param i - the index of the child page id
 	 * @return the ith child page id
-	 * @throws NoSuchElementException
 	 */
 	protected BTreePageId getChildId(int i) throws NoSuchElementException {
 
@@ -706,9 +704,7 @@ class BTreeInternalPageIterator implements Iterator<BTreeEntry> {
 
 		if (next == null) {
 			if (hasNext()) {
-				next = nextToReturn;
-				nextToReturn = null;
-				return next;
+                return null;
 			} else
 				throw new NoSuchElementException();
 		} else {
@@ -771,9 +767,7 @@ class BTreeInternalPageReverseIterator implements Iterator<BTreeEntry> {
 
 		if (next == null) {
 			if (hasNext()) {
-				next = nextToReturn;
-				nextToReturn = null;
-				return next;
+                return null;
 			} else
 				throw new NoSuchElementException();
 		} else {
