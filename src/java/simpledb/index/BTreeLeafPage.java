@@ -445,15 +445,6 @@ public class BTreeLeafPage extends BTreePage {
         return cnt;
     }
 
-    /**
-     * Returns true if associated slot on this page is filled.
-     */
-    public boolean isSlotUsed(int i) {
-        int headerbit = i % 8;
-        int headerbyte = (i - headerbit) / 8;
-        return (header[headerbyte] & (1 << headerbit)) != 0;
-    }
-
 
     /**
      * @return an iterator over all tuples on this page (calling remove on this iterator throws an UnsupportedOperationException)

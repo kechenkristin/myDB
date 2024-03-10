@@ -2,8 +2,6 @@ package simpledb.index;
 
 import simpledb.common.DbException;
 import simpledb.storage.BufferPool;
-import simpledb.storage.Page;
-import simpledb.transaction.TransactionId;
 
 import java.io.*;
 
@@ -13,20 +11,15 @@ import java.io.*;
  *
  * @see BufferPool
  */
-public class BTreeRootPtrPage implements Page {
+public class BTreeRootPtrPage extends AbstractBTreePage {
 
 	// final static Logger logger = LoggerFactory.getLogger(BTreeRootPtrPage.class);
 	// size of this page
 	public final static int PAGE_SIZE = 9;
 
-	private boolean dirty = false;
-	private TransactionId dirtier = null;
-
-	private final BTreePageId pid;
-
     private int root;
 	private int rootCategory;
-	private int header;
+	private int headerPtr;
 
 	private byte[] oldData;
 
@@ -40,15 +33,15 @@ public class BTreeRootPtrPage implements Page {
 	 * of the first header page
 	 */
 	public BTreeRootPtrPage(BTreePageId id, byte[] data) throws IOException {
-		this.pid = id;
-        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(data));
+		super(id);
+		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(data));
 
 		// read in the root pointer
 		root = dis.readInt();
 		rootCategory = dis.readByte();
 
 		// read in the header pointer
-		header = dis.readInt();
+		headerPtr = dis.readInt();
 		
 		setBeforeImage();
 	}
@@ -61,7 +54,7 @@ public class BTreeRootPtrPage implements Page {
 	 * @return the PageId associated with this page.
 	 */
 	public BTreePageId getId() {
-		return pid;
+		return (BTreePageId) super.getId();
 	}
 
 	/**
@@ -103,7 +96,7 @@ public class BTreeRootPtrPage implements Page {
 
 		// write out the header pointer (page number of the first header page)
 		try{
-			dos.writeInt(header);
+			dos.writeInt(headerPtr);
 		}catch(IOException e){
 			// logger.error(e.getMessage());
 		}
@@ -130,14 +123,6 @@ public class BTreeRootPtrPage implements Page {
         return new byte[PAGE_SIZE]; //all 0
 	}
 
-	public void markDirty(boolean dirty, TransactionId tid){
-		this.dirty = dirty;
-		if (dirty) this.dirtier = tid;
-	}
-
-	public TransactionId isDirty() {
-		return dirty ? dirtier : null;
-	}
 
 	/** Return a view of this page before it was modified
         -- used by recovery */
@@ -186,7 +171,7 @@ public class BTreeRootPtrPage implements Page {
 	 * @return the id of the first header page
 	 */
 	public BTreePageId getHeaderId() {
-		return header == 0 ? null : new BTreePageId(pid.getTableId(), header, BTreePageId.HEADER);
+		return headerPtr == 0 ? null : new BTreePageId(pid.getTableId(), headerPtr, BTreePageId.HEADER);
 	}
 
 	/**
@@ -196,7 +181,7 @@ public class BTreeRootPtrPage implements Page {
 	 */
 	public void setHeaderId(BTreePageId id) throws DbException {
 		if(id == null) {
-			header = 0;
+			headerPtr = 0;
 		}
 		else {
 			if(id.getTableId() != pid.getTableId()) {
@@ -205,7 +190,7 @@ public class BTreeRootPtrPage implements Page {
 			if(id.pgcateg() != BTreePageId.HEADER) {
 				throw new DbException("header must be of type BTreePageId.HEADER");
 			}
-			header = id.getPageNumber();
+			headerPtr = id.getPageNumber();
 		}
 	}
 

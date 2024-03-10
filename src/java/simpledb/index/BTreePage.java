@@ -1,10 +1,11 @@
 package simpledb.index;
 
-import simpledb.common.*;
+import simpledb.common.Catalog;
+import simpledb.common.Database;
+import simpledb.common.DbException;
+import simpledb.common.Type;
 import simpledb.storage.BufferPool;
-import simpledb.storage.Page;
 import simpledb.storage.TupleDesc;
-import simpledb.transaction.TransactionId;
 
 /**
  * Each instance of BTreeInternalPage stores data for one page of a BTreeFile and 
@@ -14,13 +15,9 @@ import simpledb.transaction.TransactionId;
  * @see BufferPool
  *
  */
-public abstract class BTreePage implements Page {
-	protected volatile boolean dirty = false;
-	protected volatile TransactionId dirtier = null;
-
+public abstract class BTreePage extends AbstractBTreePage {
 	protected final static int INDEX_SIZE = Type.INT_TYPE.getLen();
 
-	protected final BTreePageId pid;
 	protected final TupleDesc td;
 	protected final int keyField;
 
@@ -28,7 +25,6 @@ public abstract class BTreePage implements Page {
 	protected byte[] oldData;
 	protected final Byte oldDataLock= (byte) 0;
 
-	protected byte[] header;
 
 	/**
 	 * Create a BTreeInternalPage from a set of bytes of data read from disk.
@@ -54,7 +50,7 @@ public abstract class BTreePage implements Page {
 	 * @param key - the field which the index is keyed on
 	 */
 	public BTreePage(BTreePageId id, int key) {
-		this.pid = id;
+		super(id);
 		this.keyField = key;
 		this.td = Database.getCatalog().getTupleDesc(id.getTableId());
 	}
@@ -110,45 +106,10 @@ public abstract class BTreePage implements Page {
 		}
 	}
 
-	/**
-	 * Marks this page as dirty/not dirty and record that transaction
-	 * that did the dirtying
-	 */
-	public void markDirty(boolean dirty, TransactionId tid) {
-		this.dirty = dirty;
-		if (dirty) this.dirtier = tid;
-	}
-
-	/**
-	 * Returns the tid of the transaction that last dirtied this page, or null if the page is not dirty
-	 */
-	public TransactionId isDirty() {
-		return dirty ? this.dirtier : null;
-	}
 
 	/**
 	 * Returns the number of empty slots on this page.
 	 */
 	public abstract int getNumEmptySlots();
-	
-	/**
-	 * Returns true if associated slot on this page is filled.
-	 */
-	public boolean isSlotUsed(int i) {
-		int headerbit = i % 8;
-		int headerbyte = (i - headerbit) / 8;
-		return (header[headerbyte] & (1 << headerbit)) != 0;
-	}
-
-	protected void markSlotUsed(int i, boolean value) {
-		int headerbit = i % 8;
-		int headerbyte = (i - headerbit) / 8;
-
-		Debug.log(1, "BTreePage.setSlot: setting slot %d to %b", i, value);
-		if (value)
-			header[headerbyte] |= (byte) (1 << headerbit);
-		else
-			header[headerbyte] &= (byte) (0xFF ^ (1 << headerbit));
-	}
 }
 

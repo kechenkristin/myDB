@@ -1,13 +1,10 @@
 package simpledb.index;
 
 import simpledb.common.DbException;
-import simpledb.common.Debug;
 import simpledb.common.Type;
 import simpledb.storage.BufferPool;
 import simpledb.storage.Field;
 import simpledb.storage.IntField;
-import simpledb.storage.Page;
-import simpledb.transaction.TransactionId;
 
 import java.io.*;
 import java.util.Arrays;
@@ -20,16 +17,11 @@ import java.util.Arrays;
  * @see BufferPool
  *
  */
-public class BTreeHeaderPage implements Page {
+public class BTreeHeaderPage extends AbstractBTreePage {
 
 	// final static Logger logger = LoggerFactory.getLogger(BTreeHeaderPage.class);
-	private volatile boolean dirty = false;
-	private volatile TransactionId dirtier = null;
-	
 	final static int INDEX_SIZE = Type.INT_TYPE.getLen();
 
-	final BTreePageId pid;
-	final byte[] header;
 	final int numSlots;
 
 	private int nextPage; // next header page or 0
@@ -47,7 +39,7 @@ public class BTreeHeaderPage implements Page {
 	 * 
 	 */
 	public BTreeHeaderPage(BTreePageId id, byte[] data) throws IOException {
-		this.pid = id;
+		super(id);
 		this.numSlots = getNumSlots();
 		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(data));
 
@@ -193,10 +185,7 @@ public class BTreeHeaderPage implements Page {
 	 * @return the page id of the previous header page
 	 */
 	public BTreePageId getPrevPageId() {
-		if(prevPage == 0) {
-			return null;
-		}
-		return new BTreePageId(pid.getTableId(), prevPage, BTreePageId.HEADER);
+		return prevPage == 0 ? null : new BTreePageId(pid.getTableId(), prevPage, BTreePageId.HEADER);
 	}
 
 	/**
@@ -204,10 +193,7 @@ public class BTreeHeaderPage implements Page {
 	 * @return the page id of the next header page
 	 */
 	public BTreePageId getNextPageId() {
-		if(nextPage == 0) {
-			return null;
-		}
-		return new BTreePageId(pid.getTableId(), nextPage, BTreePageId.HEADER);
+		return nextPage == 0 ? null : new BTreePageId(pid.getTableId(), nextPage, BTreePageId.HEADER);
 	}
 
 	/**
@@ -246,45 +232,6 @@ public class BTreeHeaderPage implements Page {
 			}
 			nextPage = id.getPageNumber();
 		}
-	}
-
-	/**
-	 * Marks this page as dirty/not dirty and record that transaction
-	 * that did the dirtying
-	 */
-	public void markDirty(boolean dirty, TransactionId tid) {
-		this.dirty = dirty;
-		if (dirty) this.dirtier = tid;
-	}
-
-	/**
-	 * Returns the tid of the transaction that last dirtied this page, or null if the page is not dirty
-	 */
-	public TransactionId isDirty() {
-		return dirty ? dirtier : null;
-	}
-
-	/**
-	 * Returns true if the page of the BTreeFile associated with slot i is used
-	 */
-	public boolean isSlotUsed(int i) {
-		int headerbit = i % 8;
-		int headerbyte = (i - headerbit) / 8;
-		return (header[headerbyte] & (1 << headerbit)) != 0;
-	}
-
-	/**
-	 * Abstraction to mark a page of the BTreeFile used or unused
-	 */
-	public void markSlotUsed(int i, boolean value) {
-		int headerbit = i % 8;
-		int headerbyte = (i - headerbit) / 8;
-
-		Debug.log(1, "BTreeHeaderPage.setSlot: setting slot %d to %b", i, value);
-		if(value)
-			header[headerbyte] |= 1 << headerbit;
-		else
-			header[headerbyte] &= (0xFF ^ (1 << headerbit));
 	}
 
 	/**
