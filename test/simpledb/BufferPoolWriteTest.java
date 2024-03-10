@@ -1,5 +1,17 @@
 package simpledb;
 
+import junit.framework.JUnit4TestAdapter;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import simpledb.common.Database;
+import simpledb.common.DbException;
+import simpledb.common.Permissions;
+import simpledb.common.Utility;
+import simpledb.storage.*;
+import simpledb.systemtest.SystemTestUtil;
+import simpledb.transaction.TransactionId;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -7,19 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import simpledb.common.Database;
-import simpledb.common.DbException;
-import simpledb.common.Permissions;
-import simpledb.common.Utility;
-import simpledb.storage.*;
-import simpledb.systemtest.SystemTestUtil;
-import static org.junit.Assert.*;
-import junit.framework.JUnit4TestAdapter;
-import simpledb.transaction.TransactionId;
+import static org.junit.Assert.assertEquals;
 
 public class BufferPoolWriteTest extends TestUtil.CreateHeapFile {
     private TransactionId tid;
@@ -39,7 +39,7 @@ public class BufferPoolWriteTest extends TestUtil.CreateHeapFile {
     	@Override
     	public List<Page> insertTuple(TransactionId tid, Tuple t)
     			throws DbException, IOException {
-    		List<Page> dirtypages = new ArrayList<>();
+    		List<Page> dirtyPages = new ArrayList<>();
     		for(int i = 0; i < duplicates; i++) {
     			// create a blank page
     			BufferedOutputStream bw = new BufferedOutputStream(new FileOutputStream(super.getFile(), true));
@@ -49,9 +49,9 @@ public class BufferPoolWriteTest extends TestUtil.CreateHeapFile {
     			HeapPage p = new HeapPage(new HeapPageId(super.getId(), super.numPages() - 1),
     					HeapPage.createEmptyPageData());
     	        p.insertTuple(t);
-    			dirtypages.add(p);
+    			dirtyPages.add(p);
     		}
-    		return dirtypages;
+    		return dirtyPages;
     	}
     }
     

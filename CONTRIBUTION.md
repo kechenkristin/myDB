@@ -86,3 +86,8 @@ Started a new transaction tid = 1221852405823
 
 SimpleDB> 
 ```
+
+## How to use simpleDB
+1. Build jar  
+   use ant build to build the jar package
+2. Once get the jar, rememer to config IDEA rather than use command line!

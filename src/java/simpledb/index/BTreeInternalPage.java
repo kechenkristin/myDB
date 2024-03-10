@@ -32,7 +32,7 @@ public class BTreeInternalPage extends BTreePage {
 
     public void checkRep(Field lowerBound, Field upperBound, boolean checkOccupancy, int depth) {
         Field prev = lowerBound;
-        assert (this.getId().pgcateg() == BTreePageId.INTERNAL);
+        assert (this.getId().getPageCategory() == BTreePageId.INTERNAL);
 
         Iterator<BTreeEntry> it = this.iterator();
         while (it.hasNext()) {
@@ -444,11 +444,11 @@ public class BTreeInternalPage extends BTreePage {
             throw new DbException("table id mismatch in insertEntry");
 
         if (childCategory == 0) {
-            if (e.getLeftChild().pgcateg() != e.getRightChild().pgcateg())
+            if (e.getLeftChild().getPageCategory() != e.getRightChild().getPageCategory())
                 throw new DbException("child page category mismatch in insertEntry");
 
-            childCategory = e.getLeftChild().pgcateg();
-        } else if (e.getLeftChild().pgcateg() != childCategory || e.getRightChild().pgcateg() != childCategory)
+            childCategory = e.getLeftChild().getPageCategory();
+        } else if (e.getLeftChild().getPageCategory() != childCategory || e.getRightChild().getPageCategory() != childCategory)
             throw new DbException("child page category mismatch in insertEntry");
 
         // if this is the first entry, add it and return

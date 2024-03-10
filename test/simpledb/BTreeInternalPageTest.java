@@ -1,30 +1,29 @@
 package simpledb;
 
-import simpledb.common.Database;
-import simpledb.index.*;
-import simpledb.index.BTreeFileEncoder.EntryComparator;
-import simpledb.index.BTreeFileEncoder.ReverseEntryComparator;
+import junit.framework.JUnit4TestAdapter;
+import org.junit.Before;
+import org.junit.Test;
 import simpledb.TestUtil.SkeletonFile;
+import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Type;
 import simpledb.common.Utility;
+import simpledb.index.*;
+import simpledb.index.BTreeFileEncoder.EntryComparator;
+import simpledb.index.BTreeFileEncoder.ReverseEntryComparator;
 import simpledb.storage.BufferPool;
 import simpledb.storage.IntField;
 import simpledb.systemtest.SimpleDbTestBase;
 import simpledb.systemtest.SystemTestUtil;
-
-//import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import junit.framework.JUnit4TestAdapter;
 import simpledb.transaction.TransactionId;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 public class BTreeInternalPageTest extends SimpleDbTestBase {
 	private BTreePageId pid;
@@ -204,12 +203,12 @@ public class BTreeInternalPageTest extends SimpleDbTestBase {
 		BTreeInternalPage page = new BTreeInternalPage(pid, EXAMPLE_DATA, 0);
 		page.markDirty(true, tid);
 		TransactionId dirtier = page.isDirty();
-        assertTrue(dirtier != null);
-        assertTrue(dirtier == tid);
+        assertNotNull(dirtier);
+        assertSame(dirtier, tid);
 
 		page.markDirty(false, tid);
 		dirtier = page.isDirty();
-        assertFalse(dirtier != null);
+        assertNull(dirtier);
 	}
 
 	/**
@@ -237,9 +236,9 @@ public class BTreeInternalPageTest extends SimpleDbTestBase {
 		int childPtr = 1;
 		for(BTreeEntry e : entries) {
 			BTreeEntry next = it0.next();
-			assertTrue(e.getKey().equals(next.getKey()));
-			assertTrue(next.getLeftChild().getPageNumber() == childPtr);
-			assertTrue(next.getRightChild().getPageNumber() == ++childPtr);
+            assertEquals(e.getKey(), next.getKey());
+            assertEquals(next.getLeftChild().getPageNumber(), childPtr);
+            assertEquals(next.getRightChild().getPageNumber(), ++childPtr);
 		}
 
 		// now insert entries until the page fills up
@@ -264,7 +263,7 @@ public class BTreeInternalPageTest extends SimpleDbTestBase {
 					found = true;
 
 					// verify that the RecordId is sane
-					assertTrue(page.getId().equals(e.getRecordId().getPageId()));
+                    assertEquals(page.getId(), e.getRecordId().getPageId());
 					break;
 				}
 			}
@@ -305,7 +304,7 @@ public class BTreeInternalPageTest extends SimpleDbTestBase {
 
 		// now, delete them one-by-one from both the front and the end.
 		int deleted = 0;
-		while (entries.size() > 0) {
+		while (!entries.isEmpty()) {
 			page.deleteKeyAndRightChild(entries.removeFirst());
 			page.deleteKeyAndRightChild(entries.removeLast());
 			deleted += 2;

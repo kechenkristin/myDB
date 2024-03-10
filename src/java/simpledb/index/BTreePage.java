@@ -13,7 +13,7 @@ import simpledb.storage.TupleDesc;
  *
  * @see BTreeFile
  * @see BufferPool
- *
+ * @author Kechen Liu
  */
 public abstract class BTreePage extends AbstractBTreePage {
 	protected final static int INDEX_SIZE = Type.INT_TYPE.getLen();
@@ -95,10 +95,10 @@ public abstract class BTreePage extends AbstractBTreePage {
 		if(id.getTableId() != pid.getTableId()) {
 			throw new DbException("table id mismatch in setParentId");
 		}
-		if(id.pgcateg() != BTreePageId.INTERNAL && id.pgcateg() != BTreePageId.ROOT_PTR) {
+		if(id.getPageCategory() != BTreePageId.INTERNAL && id.getPageCategory() != BTreePageId.ROOT_PTR) {
 			throw new DbException("parent must be an internal node or root pointer");
 		}
-		if(id.pgcateg() == BTreePageId.ROOT_PTR) {
+		if(id.getPageCategory() == BTreePageId.ROOT_PTR) {
 			parent = 0;
 		}
 		else {

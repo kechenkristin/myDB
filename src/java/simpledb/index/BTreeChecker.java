@@ -64,32 +64,32 @@ public class BTreeChecker {
      * 4) record to page pointers.
      * 5) occupancy invariants. (if enabled)
      */
-    public static void checkRep(BTreeFile bt, TransactionId tid, Map<PageId, Page> dirtypages,
+    public static void checkRep(BTreeFile bt, TransactionId tid, Map<PageId, Page> dirtyPages,
                                 boolean checkOccupancy) throws
             DbException, IOException, TransactionAbortedException {
-        BTreeRootPtrPage rtptr = bt.getRootPtrPage(tid, dirtypages);
+        BTreeRootPtrPage rtptr = bt.getRootPtrPage(tid, dirtyPages);
 
         if (rtptr.getRootId() == null) { // non existent root is a legal state.
         } else {
-            SubtreeSummary res = checkSubTree(bt, tid, dirtypages,
+            SubtreeSummary res = checkSubTree(bt, tid, dirtyPages,
                     rtptr.getRootId(), null, null, rtptr.getId(), checkOccupancy, 0);
             assert (res.ptrLeft == null);
             assert (res.ptrRight == null);
         }
     }
 
-    static SubtreeSummary checkSubTree(BTreeFile bt, TransactionId tid, Map<PageId, Page> dirtypages,
+    static SubtreeSummary checkSubTree(BTreeFile bt, TransactionId tid, Map<PageId, Page> dirtyPages,
                                        BTreePageId pageId, Field lowerBound, Field upperBound,
                                        BTreePageId parentId, boolean checkOccupancy, int depth) throws
             TransactionAbortedException, DbException {
-        BTreePage page = (BTreePage )bt.getPage(tid, dirtypages, pageId, Permissions.READ_ONLY);
+        BTreePage page = (BTreePage )bt.getPage(tid, dirtyPages, pageId, Permissions.READ_ONLY);
         assert(page.getParentId().equals(parentId));
 
-        if (page.getId().pgcateg() == BTreePageId.LEAF) {
+        if (page.getId().getPageCategory() == BTreePageId.LEAF) {
             BTreeLeafPage bpage = (BTreeLeafPage) page;
             bpage.checkRep(bt.keyField(), lowerBound, upperBound, checkOccupancy, depth);
             return new SubtreeSummary(bpage, depth);
-        } else if (page.getId().pgcateg() == BTreePageId.INTERNAL) {
+        } else if (page.getId().getPageCategory() == BTreePageId.INTERNAL) {
 
             BTreeInternalPage ipage = (BTreeInternalPage) page;
             ipage.checkRep(lowerBound, upperBound, checkOccupancy, depth);
@@ -100,7 +100,7 @@ public class BTreeChecker {
 
             prev = it.next();
             { // init acc and prev.
-                acc = checkSubTree(bt, tid, dirtypages, prev.getLeftChild(), lowerBound, prev.getKey(), ipage.getId(),
+                acc = checkSubTree(bt, tid, dirtyPages, prev.getLeftChild(), lowerBound, prev.getKey(), ipage.getId(),
                         checkOccupancy, depth + 1);
                 lowerBound = prev.getKey();
             }
@@ -110,7 +110,7 @@ public class BTreeChecker {
             while (it.hasNext()) {
                 curr = it.next();
                 SubtreeSummary currentSubTreeResult =
-                        checkSubTree(bt, tid, dirtypages, curr.getLeftChild(), lowerBound, curr.getKey(), ipage.getId(),
+                        checkSubTree(bt, tid, dirtyPages, curr.getLeftChild(), lowerBound, curr.getKey(), ipage.getId(),
                                 checkOccupancy, depth + 1);
                 acc = SubtreeSummary.checkAndMerge(acc, currentSubTreeResult);
 
@@ -118,7 +118,7 @@ public class BTreeChecker {
                 lowerBound = curr.getKey();
             }
 
-            SubtreeSummary lastRight = checkSubTree(bt, tid, dirtypages, curr.getRightChild(), lowerBound, upperBound,
+            SubtreeSummary lastRight = checkSubTree(bt, tid, dirtyPages, curr.getRightChild(), lowerBound, upperBound,
                     ipage.getId(), checkOccupancy, depth + 1);
             acc = SubtreeSummary.checkAndMerge(acc, lastRight);
 

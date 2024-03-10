@@ -7,6 +7,4 @@ dist/
 .idea/
 .DS_Store
 *.zip
-*.txt
-*.dat
-*.png
+data/

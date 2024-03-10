@@ -77,7 +77,7 @@ public class BTreeFileReadTest extends SimpleDbTestBase {
 		BTreeRootPtrPage rootPtr = (BTreeRootPtrPage) f.readPage(rootPtrPid);
 
 		assertEquals(1, rootPtr.getRootId().getPageNumber());
-		assertEquals(BTreePageId.LEAF, rootPtr.getRootId().pgcateg());
+		assertEquals(BTreePageId.LEAF, rootPtr.getRootId().getPageCategory());
 
 		BTreePageId pid = new BTreePageId(f.getId(), 1, BTreePageId.LEAF);
 		BTreeLeafPage page = (BTreeLeafPage) f.readPage(pid);

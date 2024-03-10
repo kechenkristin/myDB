@@ -1,5 +1,8 @@
 package simpledb;
 
+import junit.framework.JUnit4TestAdapter;
+import org.junit.Before;
+import org.junit.Test;
 import simpledb.TestUtil.SkeletonFile;
 import simpledb.common.Database;
 import simpledb.common.DbException;
@@ -9,15 +12,9 @@ import simpledb.index.BTreePageId;
 import simpledb.index.BTreeRootPtrPage;
 import simpledb.systemtest.SimpleDbTestBase;
 import simpledb.systemtest.SystemTestUtil;
-
-//import java.io.File;
-import java.io.IOException;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import junit.framework.JUnit4TestAdapter;
 import simpledb.transaction.TransactionId;
+
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -131,12 +128,12 @@ public class BTreeRootPtrPageTest extends SimpleDbTestBase {
 		BTreeRootPtrPage page = new BTreeRootPtrPage(pid, EXAMPLE_DATA);
 		page.markDirty(true, tid);
 		TransactionId dirtier = page.isDirty();
-        assertTrue(dirtier != null);
-        assertTrue(dirtier == tid);
+        assertNotNull(dirtier);
+        assertSame(dirtier, tid);
 
 		page.markDirty(false, tid);
 		dirtier = page.isDirty();
-        assertFalse(dirtier != null);
+        assertNull(dirtier);
 	}
 
 	/**

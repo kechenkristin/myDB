@@ -205,12 +205,12 @@ and that inserting the entry at that location will keep the keys in sorted
 order.
 
 In both `splitLeafPage()` and `splitInternalPage()`, you will need to update the
-set of `dirtypages` with any newly created pages as well as any pages modified
+set of `dirtyPages` with any newly created pages as well as any pages modified
 due to new pointers or new data. This is where `BTreeFile.getPage()` will come
 in handy.  Each time you fetch a page, `BTreeFile.getPage()` will check to see
-if the page is already stored in the local cache (`dirtypages`), and if it can't
+if the page is already stored in the local cache (`dirtyPages`), and if it can't
 find the requested page there, it fetches it from the buffer pool.
-`BTreeFile.getPage()` also adds pages to the `dirtypages` cache if they are
+`BTreeFile.getPage()` also adds pages to the `dirtyPages` cache if they are
 fetched with read-write permission, since presumably they will soon be dirtied.
 One advantage of this approach is that it prevents loss of updates if the same
 pages are accessed multiple times during a single tuple insertion or deletion.

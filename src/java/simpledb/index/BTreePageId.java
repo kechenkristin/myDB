@@ -17,7 +17,7 @@ public class BTreePageId implements PageId {
 
 	private final int tableId;
 	private final int pgNo;
-	private final int pgcateg;
+	private final int pageCategory;
 
 	static public String categToString(int categ) {
         return switch (categ) {
@@ -35,15 +35,16 @@ public class BTreePageId implements PageId {
 	 *
 	 * @param tableId The table that is being referenced
 	 * @param pgNo The page number in that table.
-	 * @param pgcateg which kind of page it is
+	 * @param pageCategory which kind of page it is
 	 */
-	public BTreePageId(int tableId, int pgNo, int pgcateg) {
+	public BTreePageId(int tableId, int pgNo, int pageCategory) {
 		this.tableId = tableId;
 		this.pgNo = pgNo;
-		this.pgcateg = pgcateg;
+		this.pageCategory = pageCategory;
 	}
 
 	/** @return the table associated with this PageId */
+	@Override
 	public int getTableId() {
 		return tableId;
 	}
@@ -52,6 +53,7 @@ public class BTreePageId implements PageId {
 	 * @return the page number in the table getTableId() associated with
 	 *   this PageId
 	 */
+	@Override
 	public int getPageNumber() {
 		return pgNo;
 	}
@@ -59,8 +61,8 @@ public class BTreePageId implements PageId {
 	/**
 	 * @return the category of this page
 	 */
-	public int pgcateg() {
-		return pgcateg;
+	public int getPageCategory() {
+		return pageCategory;
 	}
 
 	/**
@@ -69,8 +71,9 @@ public class BTreePageId implements PageId {
 	 *   key in a hash table in the BufferPool, for example.)
 	 * @see BufferPool
 	 */
+	@Override
 	public int hashCode() {
-	    return Objects.hash(tableId, pgNo, pgcateg);
+	    return Objects.hash(tableId, pgNo, pageCategory);
 	}
 
 	/**
@@ -80,17 +83,18 @@ public class BTreePageId implements PageId {
 	 * @return true if the objects are equal (e.g., page numbers, table
 	 *   ids and pgcateg are the same)
 	 */
+	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof BTreePageId p))
 			return false;
-		return tableId == p.tableId && pgNo == p.pgNo && pgcateg == p.pgcateg;
+		return tableId == p.tableId && pgNo == p.pgNo && pageCategory == p.pageCategory;
 	}
 
+	@Override
 	public String toString() {
-
         return "(tableId: " + tableId +
                 ", pgNo: " + pgNo +
-                ", pgcateg: " + categToString(pgcateg) +
+                ", pgcateg: " + categToString(pageCategory) +
                 ")";
 	}
 
@@ -100,12 +104,13 @@ public class BTreePageId implements PageId {
 	 *  number of integers that corresponds to number of args to one of the
 	 *  constructors.
 	 */
+	@Override
 	public int[] serialize() {
 		int[] data = new int[3];
 
 		data[0] = tableId;
 		data[1] = pgNo;
-		data[2] = pgcateg;
+		data[2] = pageCategory;
 
 		return data;
 	}

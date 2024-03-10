@@ -372,7 +372,7 @@ public class BTreeFileEncoder {
 	 */
 	private static void setParents(BTreeFile bf, BTreePageId pid, BTreePageId parent) 
 			throws IOException, DbException {
-		if(pid.pgcateg() == BTreePageId.INTERNAL) {
+		if(pid.getPageCategory() == BTreePageId.INTERNAL) {
 			BTreeInternalPage page = (BTreeInternalPage) bf.readPage(pid);
 			page.setParentId(parent);
 

@@ -208,7 +208,7 @@ public class BTreeHeaderPage extends AbstractBTreePage {
 			if(id.getTableId() != pid.getTableId()) {
 				throw new DbException("table id mismatch in setPrevPageId");
 			}
-			if(id.pgcateg() != BTreePageId.HEADER) {
+			if(id.getPageCategory() != BTreePageId.HEADER) {
 				throw new DbException("prevPage must be a header page");
 			}
 			prevPage = id.getPageNumber();
@@ -227,7 +227,7 @@ public class BTreeHeaderPage extends AbstractBTreePage {
 			if(id.getTableId() != pid.getTableId()) {
 				throw new DbException("table id mismatch in setNextPageId");
 			}
-			if(id.pgcateg() != BTreePageId.HEADER) {
+			if(id.getPageCategory() != BTreePageId.HEADER) {
 				throw new DbException("nextPage must be a header page");
 			}
 			nextPage = id.getPageNumber();

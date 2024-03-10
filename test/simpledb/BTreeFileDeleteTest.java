@@ -1,21 +1,22 @@
 package simpledb;
 
-import simpledb.common.Database;
-import simpledb.index.*;
-import simpledb.storage.*;
-import simpledb.systemtest.SimpleDbTestBase;
-import simpledb.execution.Predicate.Op;
-
-import java.io.File;
-import java.util.*;
-
+import junit.framework.JUnit4TestAdapter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import simpledb.common.Database;
+import simpledb.execution.Predicate.Op;
+import simpledb.index.*;
+import simpledb.storage.*;
+import simpledb.systemtest.SimpleDbTestBase;
+import simpledb.transaction.TransactionId;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import static org.junit.Assert.*;
-import junit.framework.JUnit4TestAdapter;
-import simpledb.transaction.TransactionId;
 
 public class BTreeFileDeleteTest extends SimpleDbTestBase {
 	private TransactionId tid;
@@ -171,16 +172,16 @@ public class BTreeFileDeleteTest extends SimpleDbTestBase {
 		
 		int totalTuples = leftPage.getNumTuples() + rightPage.getNumTuples();
 		
-		Map<PageId, Page> dirtypages = new HashMap<>();
-		dirtypages.put(leftPageId, leftPage);
-		dirtypages.put(rightPageId, rightPage);
-		dirtypages.put(parentId, parent);
-		empty.mergeLeafPages(tid, dirtypages, leftPage, rightPage, parent, entry);
+		Map<PageId, Page> dirtyPages = new HashMap<>();
+		dirtyPages.put(leftPageId, leftPage);
+		dirtyPages.put(rightPageId, rightPage);
+		dirtyPages.put(parentId, parent);
+		empty.mergeLeafPages(tid, dirtyPages, leftPage, rightPage, parent, entry);
 		assertEquals(totalTuples, leftPage.getNumTuples());
 		assertEquals(0, rightPage.getNumTuples());
-		assertEquals(null, leftPage.getRightSiblingId());
+        assertNull(leftPage.getRightSiblingId());
 		assertEquals(numEntries - 1, parent.getNumEntries());
-		assertEquals(rightPageId.getPageNumber(), empty.getEmptyPageNo(tid, dirtypages));
+		assertEquals(rightPageId.getPageNumber(), empty.getEmptyPageNo(tid, dirtyPages));
 	}
 
 	@Test
@@ -215,11 +216,11 @@ public class BTreeFileDeleteTest extends SimpleDbTestBase {
 		int totalEntries = page.getNumEntries() + sibling.getNumEntries();
 		int entriesToSteal = totalEntries/2 - page.getNumEntries();
 		
-		Map<PageId, Page> dirtypages = new HashMap<>();
-		dirtypages.put(pageId, page);
-		dirtypages.put(siblingId, sibling);
-		dirtypages.put(parentId, parent);
-		empty.stealFromLeftInternalPage(tid, dirtypages, page, sibling, parent, entry);
+		Map<PageId, Page> dirtyPages = new HashMap<>();
+		dirtyPages.put(pageId, page);
+		dirtyPages.put(siblingId, sibling);
+		dirtyPages.put(parentId, parent);
+		empty.stealFromLeftInternalPage(tid, dirtyPages, page, sibling, parent, entry);
 		
 		// are all the entries still there?
 		assertEquals(totalEntries, page.getNumEntries() + sibling.getNumEntries());
@@ -238,12 +239,12 @@ public class BTreeFileDeleteTest extends SimpleDbTestBase {
 		
 		// are all the parent pointers set?
 		Iterator<BTreeEntry> it = page.iterator();
-		BTreeEntry e = null;
+		BTreeEntry e;
 		int count = 0;
 		while(count < entriesToSteal) {
 			assertTrue(it.hasNext());
 			e = it.next();
-			BTreePage p = (BTreePage) dirtypages.get(e.getLeftChild());
+			BTreePage p = (BTreePage) dirtyPages.get(e.getLeftChild());
 			assertEquals(pageId, p.getParentId());
 			++count;
 		}
@@ -281,11 +282,11 @@ public class BTreeFileDeleteTest extends SimpleDbTestBase {
 		int totalEntries = page.getNumEntries() + sibling.getNumEntries();
 		int entriesToSteal = totalEntries/2 - page.getNumEntries();
 		
-		Map<PageId, Page> dirtypages = new HashMap<>();
-		dirtypages.put(pageId, page);
-		dirtypages.put(siblingId, sibling);
-		dirtypages.put(parentId, parent);
-		empty.stealFromRightInternalPage(tid, dirtypages, page, sibling, parent, entry);
+		Map<PageId, Page> dirtyPages = new HashMap<>();
+		dirtyPages.put(pageId, page);
+		dirtyPages.put(siblingId, sibling);
+		dirtyPages.put(parentId, parent);
+		empty.stealFromRightInternalPage(tid, dirtyPages, page, sibling, parent, entry);
 		
 		// are all the entries still there?
 		assertEquals(totalEntries, page.getNumEntries() + sibling.getNumEntries());
@@ -304,12 +305,12 @@ public class BTreeFileDeleteTest extends SimpleDbTestBase {
 		
 		// are all the parent pointers set?
 		Iterator<BTreeEntry> it = page.reverseIterator();
-		BTreeEntry e = null;
+		BTreeEntry e;
 		int count = 0;
 		while(count < entriesToSteal) {
 			assertTrue(it.hasNext());
 			e = it.next();
-			BTreePage p = (BTreePage) dirtypages.get(e.getRightChild());
+			BTreePage p = (BTreePage) dirtyPages.get(e.getRightChild());
 			assertEquals(pageId, p.getParentId());
 			++count;
 		}
@@ -351,24 +352,24 @@ public class BTreeFileDeleteTest extends SimpleDbTestBase {
 		
 		int totalEntries = leftPage.getNumEntries() + rightPage.getNumEntries();
 		
-		Map<PageId, Page> dirtypages = new HashMap<>();
-		dirtypages.put(leftPageId, leftPage);
-		dirtypages.put(rightPageId, rightPage);
-		dirtypages.put(parentId, parent);
-		empty.mergeInternalPages(tid, dirtypages, leftPage, rightPage, parent, entry);
+		Map<PageId, Page> dirtyPages = new HashMap<>();
+		dirtyPages.put(leftPageId, leftPage);
+		dirtyPages.put(rightPageId, rightPage);
+		dirtyPages.put(parentId, parent);
+		empty.mergeInternalPages(tid, dirtyPages, leftPage, rightPage, parent, entry);
 		assertEquals(totalEntries + 1, leftPage.getNumEntries());
 		assertEquals(0, rightPage.getNumEntries());
 		assertEquals(numParentEntries - 1, parent.getNumEntries());
-		assertEquals(rightPageId.getPageNumber(), empty.getEmptyPageNo(tid, dirtypages));
+		assertEquals(rightPageId.getPageNumber(), empty.getEmptyPageNo(tid, dirtyPages));
 
 		// are all the parent pointers set?
 		Iterator<BTreeEntry> it = leftPage.reverseIterator();
-		BTreeEntry e = null;
+		BTreeEntry e;
 		int count = 0;
 		while(count < entriesPerPage/2 - 1) {
 			assertTrue(it.hasNext());
 			e = it.next();
-			BTreePage p = (BTreePage) dirtypages.get(e.getRightChild());
+			BTreePage p = (BTreePage) dirtyPages.get(e.getRightChild());
 			assertEquals(leftPageId, p.getParentId());
 			++count;
 		}

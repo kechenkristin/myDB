@@ -176,12 +176,12 @@ public class BTreeHeaderPageTest extends SimpleDbTestBase {
 		BTreeHeaderPage page = new BTreeHeaderPage(pid, EXAMPLE_DATA);
 		page.markDirty(true, tid);
 		TransactionId dirtier = page.isDirty();
-        assertTrue(dirtier != null);
-        assertTrue(dirtier == tid);
+        assertNotNull(dirtier);
+        assertSame(dirtier, tid);
 
 		page.markDirty(false, tid);
 		dirtier = page.isDirty();
-        assertFalse(dirtier != null);
+        assertNull(dirtier);
 	}
 
 	/**

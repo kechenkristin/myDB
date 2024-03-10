@@ -154,7 +154,7 @@ public class BTreeFileInsertTest extends SimpleDbTestBase {
 		BTreePageId rootPtrPid = new BTreePageId(onePageFile.getId(), 0, BTreePageId.ROOT_PTR);
 		BTreeRootPtrPage rootPtr = (BTreeRootPtrPage) Database.getBufferPool().getPage(tid, rootPtrPid, Permissions.READ_ONLY);
 		BTreePageId rootId = rootPtr.getRootId();
-		assertEquals(rootId.pgcateg(), BTreePageId.INTERNAL);
+		assertEquals(rootId.getPageCategory(), BTreePageId.INTERNAL);
 		BTreeInternalPage root = (BTreeInternalPage) Database.getBufferPool().getPage(tid, rootId, Permissions.READ_ONLY);
 		assertEquals(502, root.getNumEmptySlots());
 
@@ -193,7 +193,7 @@ public class BTreeFileInsertTest extends SimpleDbTestBase {
 		BTreePageId rootPtrPid = new BTreePageId(bigFile.getId(), 0, BTreePageId.ROOT_PTR);
 		BTreeRootPtrPage rootPtr = (BTreeRootPtrPage) Database.getBufferPool().getPage(tid, rootPtrPid, Permissions.READ_ONLY);
 		BTreePageId rootId = rootPtr.getRootId();
-		assertEquals(rootId.pgcateg(), BTreePageId.INTERNAL);
+		assertEquals(rootId.getPageCategory(), BTreePageId.INTERNAL);
 		BTreeInternalPage root = (BTreeInternalPage) Database.getBufferPool().getPage(tid, rootId, Permissions.READ_ONLY);
 		assertEquals(502, root.getNumEmptySlots());
 

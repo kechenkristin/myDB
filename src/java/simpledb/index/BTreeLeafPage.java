@@ -35,7 +35,7 @@ public class BTreeLeafPage extends BTreePage {
 
     public void checkRep(int fieldid, Field lowerBound, Field upperBound, boolean checkoccupancy, int depth) {
         Field prev = lowerBound;
-        assert (this.getId().pgcateg() == BTreePageId.LEAF);
+        assert (this.getId().getPageCategory() == BTreePageId.LEAF);
 
         Iterator<Tuple> it = this.iterator();
         while (it.hasNext()) {
@@ -400,7 +400,7 @@ public class BTreeLeafPage extends BTreePage {
             if (id.getTableId() != pid.getTableId()) {
                 throw new DbException("table id mismatch in setLeftSiblingId");
             }
-            if (id.pgcateg() != BTreePageId.LEAF) {
+            if (id.getPageCategory() != BTreePageId.LEAF) {
                 throw new DbException("leftSibling must be a leaf node");
             }
             leftSibling = id.getPageNumber();
@@ -420,7 +420,7 @@ public class BTreeLeafPage extends BTreePage {
             if (id.getTableId() != pid.getTableId()) {
                 throw new DbException("table id mismatch in setRightSiblingId");
             }
-            if (id.pgcateg() != BTreePageId.LEAF) {
+            if (id.getPageCategory() != BTreePageId.LEAF) {
                 throw new DbException("rightSibling must be a leaf node");
             }
             rightSibling = id.getPageNumber();

@@ -1,12 +1,15 @@
 package simpledb;
 
-import simpledb.common.Database;
-import simpledb.index.BTreeFileEncoder;
-import simpledb.index.BTreeFileEncoder.TupleComparator;
+import junit.framework.JUnit4TestAdapter;
+import org.junit.Before;
+import org.junit.Test;
 import simpledb.TestUtil.SkeletonFile;
+import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Type;
 import simpledb.common.Utility;
+import simpledb.index.BTreeFileEncoder;
+import simpledb.index.BTreeFileEncoder.TupleComparator;
 import simpledb.index.BTreeLeafPage;
 import simpledb.index.BTreePageId;
 import simpledb.index.BTreeUtility;
@@ -15,16 +18,13 @@ import simpledb.storage.IntField;
 import simpledb.storage.Tuple;
 import simpledb.systemtest.SimpleDbTestBase;
 import simpledb.systemtest.SystemTestUtil;
-
-//import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import junit.framework.JUnit4TestAdapter;
 import simpledb.transaction.TransactionId;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -225,12 +225,12 @@ public class BTreeLeafPageTest extends SimpleDbTestBase {
 		BTreeLeafPage page = new BTreeLeafPage(pid, EXAMPLE_DATA, 0);
 		page.markDirty(true, tid);
 		TransactionId dirtier = page.isDirty();
-        assertTrue(dirtier != null);
-        assertTrue(dirtier == tid);
+        assertNotNull(dirtier);
+        assertSame(dirtier, tid);
 
 		page.markDirty(false, tid);
 		dirtier = page.isDirty();
-        assertFalse(dirtier != null);
+        assertNull(dirtier);
 	}
 
 	/**
@@ -331,7 +331,7 @@ public class BTreeLeafPageTest extends SimpleDbTestBase {
 
 		// now, delete them one-by-one from both the front and the end.
 		int deleted = 0;
-		while (tuples.size() > 0) {
+		while (!tuples.isEmpty()) {
 			page.deleteTuple(tuples.removeFirst());
 			page.deleteTuple(tuples.removeLast());
 			deleted += 2;

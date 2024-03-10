@@ -1,12 +1,22 @@
 package simpledb.index;
 
 import simpledb.common.Debug;
+import simpledb.storage.BufferPool;
 import simpledb.storage.Page;
 import simpledb.storage.PageId;
 import simpledb.transaction.TransactionId;
 
 import java.util.function.Function;
 
+
+/**
+ * AbstractBTreePage which extracts the common behaviour of all the BTreePages
+ * implements the Page interface that is used by BufferPool.
+ *
+ * @see BTreeFile
+ * @see BufferPool
+ *
+ */
 public abstract class AbstractBTreePage implements Page {
 
     protected final BTreePageId pid;
@@ -45,7 +55,10 @@ public abstract class AbstractBTreePage implements Page {
         if (dirty) this.dirtier = tid;
     }
 
-    Function<Integer, int[]> calHeader = i -> new int[]{i % 8, (i - i % 8) / 8};
+    /**
+     * Functional Programming Interface for calculating header offset
+     */
+    private final Function<Integer, int[]> calHeader = i -> new int[]{i % 8, (i - i % 8) / 8};
 
     /**
      * Returns true if associated slot on this page is filled.
@@ -58,7 +71,9 @@ public abstract class AbstractBTreePage implements Page {
         return (header[headerByte] & (1 << headerBit)) != 0;
     }
 
-
+    /**
+     * Abstraction to fill or clear a slot on this page.
+     */
     public void markSlotUsed(int i, boolean value) {
 //        int headerBit = i % 8;
 //        int headerByte = (i - headerBit) / 8;

@@ -1,25 +1,24 @@
 package simpledb;
 
+import junit.framework.JUnit4TestAdapter;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import simpledb.common.Database;
 import simpledb.common.Permissions;
 import simpledb.execution.IndexPredicate;
+import simpledb.execution.Predicate.Op;
 import simpledb.index.*;
+import simpledb.index.BTreeUtility.BTreeWriter;
 import simpledb.storage.DbFileIterator;
 import simpledb.storage.Field;
 import simpledb.storage.IntField;
 import simpledb.systemtest.SimpleDbTestBase;
-import simpledb.index.BTreeUtility.BTreeWriter;
-import simpledb.execution.Predicate.Op;
+import simpledb.transaction.TransactionId;
 
-import java.util.*;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.Iterator;
 
 import static org.junit.Assert.*;
-import junit.framework.JUnit4TestAdapter;
-import simpledb.transaction.TransactionId;
 
 public class BTreeNextKeyLockingTest extends SimpleDbTestBase {
 	private TransactionId tid;
@@ -50,7 +49,7 @@ public class BTreeNextKeyLockingTest extends SimpleDbTestBase {
 		BTreePageId rootPtrPid = new BTreePageId(bigFile.getId(), 0, BTreePageId.ROOT_PTR);
 		BTreeRootPtrPage rootPtr = (BTreeRootPtrPage) Database.getBufferPool().getPage(tid, rootPtrPid, Permissions.READ_ONLY);
 		BTreePageId rootId = rootPtr.getRootId();
-		assertEquals(rootId.pgcateg(), BTreePageId.INTERNAL);
+		assertEquals(rootId.getPageCategory(), BTreePageId.INTERNAL);
 		BTreeInternalPage root = (BTreeInternalPage) Database.getBufferPool().getPage(tid, rootId, Permissions.READ_ONLY);
 		int keyIndex = 50; // this should be right in the middle since there are 100 leaf pages
 		Iterator<BTreeEntry> it = root.iterator();
@@ -152,7 +151,7 @@ public class BTreeNextKeyLockingTest extends SimpleDbTestBase {
 		BTreePageId rootPtrPid = new BTreePageId(bigFile.getId(), 0, BTreePageId.ROOT_PTR);
 		BTreeRootPtrPage rootPtr = (BTreeRootPtrPage) Database.getBufferPool().getPage(tid, rootPtrPid, Permissions.READ_ONLY);
 		BTreePageId rootId = rootPtr.getRootId();
-		assertEquals(rootId.pgcateg(), BTreePageId.INTERNAL);
+		assertEquals(rootId.getPageCategory(), BTreePageId.INTERNAL);
 		BTreeInternalPage root = (BTreeInternalPage) Database.getBufferPool().getPage(tid, rootId, Permissions.READ_ONLY);
 		int keyIndex = 50; // this should be right in the middle since there are 100 leaf pages
 		Iterator<BTreeEntry> it = root.iterator();

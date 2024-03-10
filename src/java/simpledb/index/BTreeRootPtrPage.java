@@ -158,11 +158,11 @@ public class BTreeRootPtrPage extends AbstractBTreePage {
 			if(id.getTableId() != pid.getTableId()) {
 				throw new DbException("table id mismatch in setRootId");
 			}
-			if(id.pgcateg() != BTreePageId.INTERNAL && id.pgcateg() != BTreePageId.LEAF) {
+			if(id.getPageCategory() != BTreePageId.INTERNAL && id.getPageCategory() != BTreePageId.LEAF) {
 				throw new DbException("root must be an internal node or leaf node");
 			}
 			root = id.getPageNumber();
-			rootCategory = id.pgcateg();
+			rootCategory = id.getPageCategory();
 		}
 	}
 
@@ -187,7 +187,7 @@ public class BTreeRootPtrPage extends AbstractBTreePage {
 			if(id.getTableId() != pid.getTableId()) {
 				throw new DbException("table id mismatch in setHeaderId");
 			}
-			if(id.pgcateg() != BTreePageId.HEADER) {
+			if(id.getPageCategory() != BTreePageId.HEADER) {
 				throw new DbException("header must be of type BTreePageId.HEADER");
 			}
 			headerPtr = id.getPageNumber();
