@@ -183,18 +183,17 @@ public class BTreeFile implements DbFile {
 	private BTreeLeafPage findLeafPage(TransactionId tid, Map<PageId, Page> dirtyPages, BTreePageId pid, Permissions perm,
                                        Field f)
 					throws DbException, TransactionAbortedException {
+		// 1. 获取数据页类型
+		// 2.如果是leaf page，递归结束，说明找到了
+		if (pid.pgcateg() == BTreePageId.LEAF) return (BTreeLeafPage) getPage(tid, dirtyPages, pid, perm);
+
 		// 如果f为null,那么直接找到内部节点的最左侧孩子节点指针进行遍历
 		if (f == null) {
-			if (pid.pgcateg() == BTreePageId.LEAF) return (BTreeLeafPage) getPage(tid, dirtyPages, pid, perm);
 			BTreeInternalPage page = (BTreeInternalPage) getPage(tid, dirtyPages, pid, perm);
 			BTreePageId childId = page.getChildId(0);
 			return findLeafPage(tid, dirtyPages, childId, perm, null);
 		}
 
-		// 1. 获取数据页类型
-		int type = pid.pgcateg();
-		// 2.如果是leaf page，递归结束，说明找到了
-		if (type == BTreePageId.LEAF) return (BTreeLeafPage) getPage(tid, dirtyPages, pid, perm);
 		// 3.读取internal page要使用READ_ONLY perm
 		BTreeInternalPage internalPage = (BTreeInternalPage) getPage(tid, dirtyPages, pid, Permissions.READ_ONLY);
 		// 4.获取该页面的entries

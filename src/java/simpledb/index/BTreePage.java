@@ -1,9 +1,6 @@
 package simpledb.index;
 
-import simpledb.common.Catalog;
-import simpledb.common.Database;
-import simpledb.common.DbException;
-import simpledb.common.Type;
+import simpledb.common.*;
 import simpledb.storage.BufferPool;
 import simpledb.storage.Page;
 import simpledb.storage.TupleDesc;
@@ -30,6 +27,8 @@ public abstract class BTreePage implements Page {
 	protected int parent; // parent is always internal node or 0 for root node
 	protected byte[] oldData;
 	protected final Byte oldDataLock= (byte) 0;
+
+	protected byte[] header;
 
 	/**
 	 * Create a BTreeInternalPage from a set of bytes of data read from disk.
@@ -135,6 +134,21 @@ public abstract class BTreePage implements Page {
 	/**
 	 * Returns true if associated slot on this page is filled.
 	 */
-	public abstract boolean isSlotUsed(int i);
+	public boolean isSlotUsed(int i) {
+		int headerbit = i % 8;
+		int headerbyte = (i - headerbit) / 8;
+		return (header[headerbyte] & (1 << headerbit)) != 0;
+	}
+
+	protected void markSlotUsed(int i, boolean value) {
+		int headerbit = i % 8;
+		int headerbyte = (i - headerbit) / 8;
+
+		Debug.log(1, "BTreePage.setSlot: setting slot %d to %b", i, value);
+		if (value)
+			header[headerbyte] |= (byte) (1 << headerbit);
+		else
+			header[headerbyte] &= (byte) (0xFF ^ (1 << headerbit));
+	}
 }
 

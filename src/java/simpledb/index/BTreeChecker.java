@@ -9,7 +9,6 @@ import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -95,8 +94,8 @@ public class BTreeChecker {
             BTreeInternalPage ipage = (BTreeInternalPage) page;
             ipage.checkRep(lowerBound, upperBound, checkOccupancy, depth);
 
-            SubtreeSummary acc = null;
-            BTreeEntry prev = null;
+            SubtreeSummary acc;
+            BTreeEntry prev;
             Iterator<BTreeEntry> it = ipage.iterator();
 
             prev = it.next();
