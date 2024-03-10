@@ -1,7 +1,7 @@
 package simpledb;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import simpledb.common.*;
 import simpledb.execution.OpIterator;
 import simpledb.storage.*;
@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 
 public class TestUtil {
 
-    final static Logger logger = LoggerFactory.getLogger(TestUtil.class);
+    // final static Logger logger = LoggerFactory.getLogger(TestUtil.class);
     /**
      * @return an IntField with value n
      */
@@ -343,7 +343,7 @@ public class TestUtil {
                     acquired = true;
                 }
             } catch (Exception e) {
-                logger.error(e.getMessage());
+                // logger.error(e.getMessage());
                 synchronized(elock) {
                     error = e;
                 }
