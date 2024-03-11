@@ -21,8 +21,6 @@ public class BTreeRootPtrPage extends AbstractBTreePage {
 	private int rootCategory;
 	private int headerPtr;
 
-	private byte[] oldData;
-
 	/**
 	 * Constructor.
 	 * Construct the BTreeRootPtrPage from a set of bytes of data read from

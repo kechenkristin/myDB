@@ -21,13 +21,9 @@ public class BTreeHeaderPage extends AbstractBTreePage {
 
 	// final static Logger logger = LoggerFactory.getLogger(BTreeHeaderPage.class);
 	final static int INDEX_SIZE = Type.INT_TYPE.getLen();
-
 	final int numSlots;
-
 	private int nextPage; // next header page or 0
 	private int prevPage; // previous header page or 0
-
-	byte[] oldData;
 	private final Byte oldDataLock= (byte) 0;
 
 	/**

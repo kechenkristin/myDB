@@ -24,6 +24,7 @@ public abstract class AbstractBTreePage implements Page {
     protected TransactionId dirtier = null;
 
     protected byte[] header;
+    protected byte[] oldData;
 
     public AbstractBTreePage(BTreePageId pid) {
         this.pid = pid;

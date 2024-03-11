@@ -255,6 +255,7 @@ public class BufferPool {
             }
             pageCache.put(page.getId(), page);
         }
+
     }
 
     /**
@@ -315,7 +316,10 @@ public class BufferPool {
      */
     public synchronized  void flushPages(TransactionId tid) throws IOException {
        for (Page page : pageCache.values()) {
-           if (tid.equals(page.isDirty())) flushPage(page.getId());
+           if (tid.equals(page.isDirty())) {
+               page.setBeforeImage();
+               flushPage(page.getId());
+           }
        }
     }
 
