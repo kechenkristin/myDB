@@ -1,3 +1,14 @@
+## MYDB(Kechen's Database)
+Kechen's implementation of a relational database, skeleton codes forked from MIT 6.830.
+
+MyDB supports these features:
+- Storage and Bufferpool Management: Implemented efficient storage and bufferpool management, including an LRU Replacement Policy, to optimize data retrieval and storage architecture.
+- Query Execution: Implemented Sequential Scan, Filer, Join, Aggregation, Insert, and Deletion Operator using Iterator.
+- Optimization: Applied cost-based optimization techniques, improving query efficiency by calculating cardinality and selectivity.
+- Indexing with B+ Tree: Employed B+ tree indexing to enhance data access performance, ensuring rapid retrieval of data.
+- Transaction Control: Achieved the ACID features of transactions through the writer-reader model and Two-Phase Locking. Implemented a timestamp-based Deadlock detection algorithm.
+- Logging: Implemented STEAL and NON-FORCE policies, enabling checkpoint, rollback, and recovery features.
+
 ## How to run local Junit test
 
 settings -> Project structure -> Project settings -> SDK
@@ -94,5 +105,10 @@ Started a new transaction tid = 1221852405823
 
 SimpleDB> 
 ```
+
+## Resources
+My study notes for CMU 15445:
+
+https://drive.google.com/file/d/14RguZaOPNdGTMTlmW-96zsXMiqnbwPeT/view?usp=drive_link
 
 
